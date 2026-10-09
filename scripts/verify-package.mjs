@@ -15,5 +15,15 @@ for (const library of [esm, cjs]) {
   )
   assert.ok(html.includes('<svg'))
   assert.ok(html.includes('根因'))
+  const flow = {
+    version: 1,
+    nodes: [{ id: 'task', label: '流程组件验证', type: 'activity' }],
+    edges: []
+  }
+  assert.ok(library.renderFlowchartSvg(flow).includes('流程组件验证'))
+  const flowHtml = await renderToString(
+    createSSRApp({ render: () => h(library.FlowchartDiagram, { data: flow }) })
+  )
+  assert.ok(flowHtml.includes('data-node-id="task"'))
 }
 console.log('ESM, CommonJS and Vue SSR package checks passed.')

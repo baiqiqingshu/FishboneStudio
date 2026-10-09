@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fishbone:flowchart:v1",
+  "title": "FlowchartData v1",
+  "type": "object",
+  "required": ["version", "nodes", "edges"],
+  "properties": {
+    "version": { "const": 1 },
+    "title": { "$ref": "#/$defs/label" },
+    "nodes": { "type": "array", "maxItems": 200, "items": { "$ref": "#/$defs/node" } },
+    "regions": { "type": "array", "maxItems": 30, "items": { "$ref": "#/$defs/region" } },
+    "edges": { "type": "array", "maxItems": 400, "items": { "$ref": "#/$defs/edge" } }
+  },
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 100, "pattern": "\\S" },
+    "label": { "type": "string", "minLength": 1, "maxLength": 120, "pattern": "\\S" },
+    "styleString": { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "\\S" },
+    "port": { "enum": ["auto", "top", "right", "bottom", "left"] },
+    "shapeStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fill": { "$ref": "#/$defs/styleString" },
+        "stroke": { "$ref": "#/$defs/styleString" },
+        "textColor": { "$ref": "#/$defs/styleString" },
+        "fontFamily": { "$ref": "#/$defs/styleString" },
+        "fontSize": { "type": "number", "minimum": 10, "maximum": 32 },
+        "fontWeight": { "type": "number", "minimum": 100, "maximum": 900 },
+        "lineWidth": { "type": "number", "minimum": 0.5, "maximum": 8 },
+        "radius": { "type": "number", "minimum": 0, "maximum": 40 }
+      }
+    },
+    "regionStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fill": { "$ref": "#/$defs/styleString" },
+        "stroke": { "$ref": "#/$defs/styleString" },
+        "titleColor": { "$ref": "#/$defs/styleString" },
+        "textColor": { "$ref": "#/$defs/styleString" }
+      }
+    },
+    "edgeStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stroke": { "$ref": "#/$defs/styleString" },
+        "textColor": { "$ref": "#/$defs/styleString" },
+        "lineWidth": { "type": "number", "minimum": 0.5, "maximum": 8 },
+        "dashed": { "type": "boolean" },
+        "arrow": { "type": "boolean" }
+      }
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "type", "label"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "enum": ["activity", "decision", "start", "end"] },
+        "label": { "$ref": "#/$defs/label" },
+        "regionId": { "$ref": "#/$defs/id" },
+        "shape": { "enum": ["rectangle", "ellipse"] },
+        "order": { "type": "number" },
+        "style": { "$ref": "#/$defs/shapeStyle" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "enum": ["start", "end"] } } },
+          "then": { "not": { "required": ["regionId"] } }
+        },
+        {
+          "if": { "required": ["shape"] },
+          "then": { "properties": { "type": { "const": "activity" } } }
+        }
+      ]
+    },
+    "region": {
+      "type": "object",
+      "required": ["id", "label"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "$ref": "#/$defs/label" },
+        "description": { "$ref": "#/$defs/label" },
+        "style": { "$ref": "#/$defs/regionStyle" }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "required": ["source", "target"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "source": { "$ref": "#/$defs/id" },
+        "target": { "$ref": "#/$defs/id" },
+        "label": { "$ref": "#/$defs/label" },
+        "sourcePort": { "$ref": "#/$defs/port" },
+        "targetPort": { "$ref": "#/$defs/port" },
+        "style": { "$ref": "#/$defs/edgeStyle" }
+      }
+    }
+  }
+}

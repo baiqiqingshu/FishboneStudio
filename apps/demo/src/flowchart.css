@@ -1,0 +1,436 @@
+.flow-studio-grid {
+  display: grid;
+  grid-template-columns: 302px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.flow-form-tabs {
+  display: flex;
+  padding: 14px 16px 0;
+  gap: 15px;
+  border-bottom: 1px solid #edf1f4;
+}
+.flow-form-tabs button {
+  font-size: 11px;
+  color: #9da7b3;
+  padding: 7px 0 12px;
+  border-bottom: 2px solid transparent;
+}
+.flow-form-tabs button.active {
+  border-color: #138b7c;
+  color: #138b7c;
+}
+.flow-form-tabs span {
+  font-size: 9px;
+  padding: 1px 4px;
+  margin-left: 4px;
+  background: #f0f4f5;
+  border-radius: 3px;
+}
+.flow-form-content {
+  height: 612px;
+  overflow: auto;
+  padding: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #dde6e7 transparent;
+}
+.flow-json {
+  height: 658px;
+}
+.flow-hint {
+  color: #99a7b2;
+  font-size: 9px;
+  line-height: 1.8;
+  margin: 0 0 12px;
+}
+.flow-form-item {
+  background: #fbfcfd;
+  border: 1px solid #e6edf0;
+  border-radius: 7px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.flow-item-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8397a0;
+  font-size: 9px;
+  margin-bottom: 8px;
+}
+.flow-item-heading code {
+  font:
+    8px Consolas,
+    monospace;
+  color: #a1b0b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+.flow-item-heading .icon-button {
+  margin-left: auto;
+  height: 20px;
+  width: 20px;
+}
+.flow-form-item > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 9px;
+  font-size: 9px;
+  color: #899da8;
+}
+.flow-field,
+.flow-inline-fields select,
+.flow-layout-fields input[type='number'],
+.flow-layout-fields select,
+.flow-global-styles select,
+.flow-workbench .custom-fields select {
+  border: 1px solid #e0e8e9;
+  border-radius: 5px;
+  background: #fff;
+  padding: 8px;
+  font-size: 10px;
+  outline: 0;
+  width: 100%;
+  min-width: 0;
+}
+.flow-field:focus,
+.flow-inline-fields select:focus {
+  border-color: #8cc2b0;
+  box-shadow: 0 0 0 2px #ebf7f0;
+}
+.flow-inline-fields {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 7px 0 0;
+}
+.flow-inline-fields select {
+  flex: 1;
+  padding: 6px 4px;
+  font-size: 9px;
+}
+.flow-inline-fields > span {
+  color: #a5b5bd;
+  font-size: 10px;
+}
+.flow-inline-fields + input {
+  margin-top: 7px;
+}
+.flow-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 8px;
+  white-space: nowrap;
+  color: #8aa0ab;
+}
+.flow-checkbox input {
+  accent-color: #138b7c;
+}
+.flow-add-actions {
+  display: flex;
+  gap: 8px;
+}
+.flow-add-actions .add-category {
+  margin: 8px 0;
+  width: 50%;
+  font-size: 10px;
+}
+.flow-canvas {
+  height: 600px;
+  overflow: hidden;
+  background: #f9fbfc;
+  background-image: radial-gradient(#dee7e9 0.7px, transparent 0.7px);
+  background-size: 18px 18px;
+}
+.flow-canvas-scroll {
+  height: 100%;
+  overflow: auto;
+  padding: 22px;
+  scrollbar-width: thin;
+}
+.flow-canvas-surface {
+  margin: 0 auto;
+  min-width: 120px;
+  flex-shrink: 0;
+  transition: width 0.15s;
+}
+.flowchart-diagram {
+  border-radius: 6px;
+  overflow: hidden;
+}
+.flow-canvas:fullscreen {
+  height: 100vh;
+  background-color: #fff;
+}
+.flow-canvas:fullscreen .flow-canvas-scroll {
+  padding: 28px;
+}
+.flow-layout-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 22px;
+  padding: 18px;
+}
+.flow-layout-fields > label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #8294a1;
+  font-size: 10px;
+}
+.flow-layout-fields .flow-toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.flow-toggle input {
+  accent-color: #138b7c;
+  width: 14px;
+  height: 14px;
+}
+.flow-toggle span {
+  color: #698776;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.flow-toggle small {
+  display: block;
+  color: #a0b0b6;
+  font-size: 8px;
+  margin-top: 4px;
+}
+.flow-layout-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  background: #f2f7f4;
+  padding: 9px;
+  border-radius: 6px;
+}
+.flow-layout-summary strong {
+  font-size: 23px;
+  color: #6c9a84;
+  font-weight: 500;
+}
+.flow-layout-summary span {
+  font-size: 9px;
+  color: #7f9a8c;
+  line-height: 1.6;
+}
+.flow-layout-summary small {
+  font-size: 8px;
+  color: #a0b4a9;
+}
+.flow-global-styles {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.3fr;
+  gap: 22px;
+  margin-bottom: 18px;
+}
+.flow-global-styles label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  color: #8494a1;
+}
+.flow-global-styles select {
+  width: 100%;
+}
+.flow-target-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #f0f5f4;
+  border-radius: 6px;
+  margin: 0 0 18px;
+}
+.flow-target-tabs button {
+  flex: 1;
+  padding: 7px 3px;
+  font-size: 10px;
+  color: #849c94;
+  border-radius: 4px;
+}
+.flow-target-tabs button.active {
+  background: #fff;
+  color: #138b7c;
+  box-shadow: 0 1px 3px #163d2320;
+}
+.flow-workbench .custom-fields select {
+  width: 100%;
+}
+.flow-workbench .custom-settings > .flow-hint {
+  margin: 18px 0 0;
+  font-size: 9px;
+}
+.flow-contract {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.flow-contract > span {
+  padding: 14px 10px;
+  background: #f3f8f6;
+  border: 1px solid #e3eee9;
+  border-radius: 6px;
+  color: #94a89d;
+  font-size: 9px;
+  line-height: 1.7;
+}
+.flow-contract strong {
+  display: block;
+  font:
+    13px Consolas,
+    monospace;
+  color: #5b8e78;
+}
+.flow-modal {
+  position: relative;
+}
+.flow-workbench .example-bar > svg {
+  color: #7a9d91;
+  flex-shrink: 0;
+}
+.flow-layout-panel .panel-header {
+  padding: 14px 18px;
+  min-height: 55px;
+}
+.flow-workbench .flow-form-content .add-category {
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+}
+@media (min-width: 1500px) {
+  .flow-studio-grid {
+    grid-template-columns: 330px minmax(0, 1fr);
+  }
+  .flow-canvas {
+    height: 680px;
+  }
+  .flow-form-content {
+    height: 692px;
+  }
+  .flow-json {
+    height: 738px;
+  }
+}
+@media (max-width: 1180px) {
+  .flow-studio-grid {
+    grid-template-columns: 265px minmax(0, 1fr);
+    gap: 16px;
+  }
+  .flow-layout-fields {
+    gap: 15px;
+    padding: 15px;
+  }
+  .flow-global-styles {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .flow-global-styles > label:last-child {
+    grid-column: span 2;
+  }
+}
+@media (max-width: 960px) {
+  .flow-studio-grid {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+  .flow-layout-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .flow-layout-summary {
+    grid-column: span 2;
+  }
+  .flow-workbench .canvas-info {
+    font-size: 8px;
+  }
+  .flow-workbench .canvas-footer {
+    padding: 0 10px;
+  }
+  .flow-workbench .zoom-controls {
+    gap: 3px;
+  }
+  .flow-contract {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  .flow-studio-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .flow-studio-grid > .visual-column {
+    order: -1;
+  }
+  .flow-editor {
+    width: 100%;
+  }
+  .flow-canvas {
+    height: 500px;
+  }
+  .flow-canvas-scroll {
+    padding: 16px 10px;
+  }
+  .flow-form-content {
+    height: 420px;
+  }
+  .flow-json {
+    height: 466px;
+  }
+  .flow-layout-fields {
+    gap: 16px;
+  }
+  .flow-workbench .custom-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .flow-workbench .flow-inline-fields select {
+    font-size: 11px;
+  }
+  .flow-field {
+    font-size: 12px;
+  }
+  .flow-target-tabs {
+    gap: 2px;
+  }
+  .flow-target-tabs button {
+    font-size: 9px;
+  }
+  .flow-contract {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .flow-contract span {
+    font-size: 8px;
+  }
+  .flow-contract strong {
+    font-size: 11px;
+  }
+}
+.diagram-switch {
+  border: 1px solid #dfeae5;
+  border-radius: 5px;
+  background: #f7fbf9;
+  color: #588b77;
+  padding: 6px 8px;
+  font-size: 10px;
+  max-width: 132px;
+  cursor: pointer;
+}
+@media (max-width: 720px) {
+  .topbar-right .version-tag,
+  .topbar .breadcrumb > strong {
+    display: none;
+  }
+  .diagram-switch {
+    max-width: 112px;
+    font-size: 9px;
+  }
+}

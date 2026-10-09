@@ -35,10 +35,35 @@ import {
   SlidersHorizontal,
   Sparkles,
   X,
+  Workflow,
   ZoomIn
 } from '@lucide/vue'
 import TreeEditor from './TreeEditor.vue'
 import { examples } from './examples'
+import FlowWorkbench from './FlowWorkbench.vue'
+
+const workbench = ref<'fishbone' | 'flowchart'>(
+  location.hash === '#flowchart' ? 'flowchart' : 'fishbone'
+)
+const flowWorkbench = ref<InstanceType<typeof FlowWorkbench> | null>(null)
+function syncWorkbench() {
+  workbench.value = location.hash === '#flowchart' ? 'flowchart' : 'fishbone'
+}
+window.addEventListener('hashchange', syncWorkbench)
+onBeforeUnmount(() => window.removeEventListener('hashchange', syncWorkbench))
+function navigateWorkbench(target: 'fishbone' | 'flowchart') {
+  closePanels()
+  workbench.value = target
+  location.hash = target
+}
+function openLibraryDocs() {
+  if (workbench.value === 'flowchart') flowWorkbench.value?.openDocs()
+  else showDocs.value = true
+}
+function openLibraryTemplates() {
+  if (workbench.value === 'flowchart') flowWorkbench.value?.openTemplates()
+  else showTemplates.value = true
+}
 
 const STORAGE_KEY = 'fishbone-studio:v1'
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value))
@@ -406,13 +431,24 @@ function openExport() {
       </div>
       <div class="nav-caption">工作空间</div>
       <nav>
-        <button class="nav-item active" @click="closePanels">
+        <button
+          class="nav-item"
+          :class="{ active: workbench === 'fishbone' }"
+          @click="navigateWorkbench('fishbone')"
+        >
           <GitBranch :size="18" />鱼骨图工作台<span class="nav-dot" />
         </button>
-        <button class="nav-item" @click="showTemplates = true">
+        <button
+          class="nav-item"
+          :class="{ active: workbench === 'flowchart' }"
+          @click="navigateWorkbench('flowchart')"
+        >
+          <Workflow :size="18" />流程图工作台<span class="nav-count">NEW</span>
+        </button>
+        <button class="nav-item" @click="openLibraryTemplates">
           <Layers :size="18" />示例模板<span class="nav-count">3</span>
         </button>
-        <button class="nav-item" @click="showDocs = true">
+        <button class="nav-item" @click="openLibraryDocs">
           <Code2 :size="18" />Vue 集成指南<ArrowUpRight class="nav-arrow" :size="14" />
         </button>
       </nav>
@@ -420,11 +456,11 @@ function openExport() {
         <div class="sidebar-note-icon"><Sparkles :size="18" /></div>
         <h3>把复杂问题，理清楚。</h3>
         <p>从一个问题出发，<br />让每一条原因都有迹可循。</p>
-        <button @click="showTemplates = true">探索示例模板 <ArrowUpRight :size="14" /></button>
+        <button @click="openLibraryTemplates">探索示例模板 <ArrowUpRight :size="14" /></button>
       </div>
       <div class="sidebar-bottom">
-        <span class="vue-logo">V</span><span>为 Vue 3 而构建<small>开源组件 · v1.0.0</small></span
-        ><button class="icon-button" aria-label="查看集成帮助" @click="showDocs = true">
+        <span class="vue-logo">V</span><span>为 Vue 3 而构建<small>开源组件 · v1.1.0</small></span
+        ><button class="icon-button" aria-label="查看集成帮助" @click="openLibraryDocs">
           <CircleHelp :size="17" />
         </button>
       </div>
@@ -433,18 +469,31 @@ function openExport() {
     <div class="main-shell">
       <header class="topbar">
         <div class="breadcrumb">
-          <FolderOpen :size="16" /><span>工作空间</span><ChevronRight :size="13" /><strong
-            >鱼骨图工作台</strong
-          >
+          <FolderOpen :size="16" /><span>工作空间</span><ChevronRight :size="13" /><strong>{{
+            workbench === 'flowchart' ? '流程图工作台' : '鱼骨图工作台'
+          }}</strong>
         </div>
         <div class="topbar-right">
-          <span class="version-tag">v1.0.0</span
-          ><button class="text-button" @click="showDocs = true">
+          <select
+            class="diagram-switch"
+            aria-label="选择图表类型"
+            :value="workbench"
+            @change="
+              navigateWorkbench(
+                ($event.target as HTMLSelectElement).value as 'fishbone' | 'flowchart'
+              )
+            "
+          >
+            <option value="fishbone">鱼骨图工作台</option>
+            <option value="flowchart">流程图工作台</option>
+          </select>
+          <span class="version-tag">v1.1.0</span
+          ><button class="text-button" @click="openLibraryDocs">
             <BookOpen :size="16" />开发文档 <ArrowUpRight :size="13" />
           </button>
         </div>
       </header>
-      <main>
+      <main v-if="workbench === 'fishbone'">
         <section class="page-heading">
           <div>
             <div class="eyebrow"><span />让思考更有条理</div>
@@ -796,6 +845,7 @@ function openExport() {
           ></span>
         </footer>
       </main>
+      <FlowWorkbench v-else ref="flowWorkbench" />
     </div>
 
     <div v-if="toast" class="toast" role="status"><Check :size="17" />{{ toast }}</div>

@@ -1,6 +1,6 @@
 # Fishbone Studio
 
-Vue 3 鱼骨图组件库及中文演示工作台。树结构转为 SVG 鱼骨图，支持主题定制和 PNG / JPEG / WebP / SVG 下载。
+Vue 3 鱼骨图、自动布局流程图组件库及中文演示工作台。支持结构化数据、主题定制和 PNG / JPEG / WebP / SVG 下载。
 
 ![演示工作台](docs/preview.png)
 
@@ -24,6 +24,18 @@ npm run test:e2e     # 实际浏览器：编辑、主题、存储、四种图片
 
 ## Demo 功能
 
+- **流程图工作台**：活动（方形 / 椭圆）、菱形判断、带标注的区域、箭头折线与分支回流；结构编辑和 JSON 编辑均可用。
+- 区域横排、区域内竖排、密集区域分列、连接关系优化行对齐；默认开始置顶、结束置底，纵向对齐。
+- 流程图可配置每列节点上限、布局策略，按图形类型调整颜色、文字字体、字号及字重。独立自动保存，不覆盖鱼骨图数据。
+
+直接访问 http://127.0.0.1:5173/#flowchart ，或使用顶部图表选择器 / 左侧入口切换。
+
+流程图接口详见 [结构化数据 v1 与 Vue 接入](docs/flowchart-data.md)，机读格式为 [JSON Schema](packages/vue/schema/flowchart.schema.json)。`FlowchartDiagram`、`renderFlowchartSvg` 和 `layoutFlowchart` 均从 `@fishbone/vue` 导出。
+
+![流程图工作台](docs/flowchart-preview.png)
+
+原有鱼骨图能力：
+
 - 三组示例：产品质量分析（6M）、项目延期复盘、用户流失分析。
 - 结构编辑：修改名称（失焦后应用）、添加任意层子节点、删除节点、折叠分支。
 - JSON 编辑：粘贴或修改完整树结构，点击「应用数据」后校验。错误输入不会覆盖当前图表。
@@ -40,7 +52,7 @@ npm run test:e2e     # 实际浏览器：编辑、主题、存储、四种图片
 npm run build -w @fishbone/vue
 npm pack -w @fishbone/vue
 # 在你的 Vue 项目中安装生成的包（替换为实际文件路径）
-npm install D:/WorkProject/FishboneStudio/fishbone-vue-1.0.0.tgz
+npm install D:/WorkProject/FishboneStudio/fishbone-vue-1.1.0.tgz
 ```
 
 生成 ESM / CommonJS 两种构建和 TypeScript 声明。Vue 是 peer dependency，不会被打进组件库；无需额外引入 CSS。

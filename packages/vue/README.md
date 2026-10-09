@@ -2,6 +2,45 @@
 
 Vue 3 鱼骨图组件，支持嵌套树数据、五套内置主题、自定义样式和 PNG / JPEG / WebP / SVG 导出。
 
+v1.1 同时提供 `FlowchartDiagram`，支持活动 / 判断、区域分组、正交箭头连线、按连接优化的自动布局与多列分拆。输入格式为 `{ version: 1, nodes, regions?, edges }`。完整数据接口文档见仓库 `docs/flowchart-data.md`，包内 `schema/flowchart.schema.json` 提供 JSON Schema，可通过 `@fishbone/vue/schema` 访问。
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { FlowchartDiagram } from '@fishbone/vue'
+import type { FlowchartData, FlowchartHandle } from '@fishbone/vue'
+const chart = ref<FlowchartHandle | null>(null)
+const flowData: FlowchartData = {
+  version: 1,
+  regions: [{ id: 'team', label: '处理区域', description: '业务办理' }],
+  nodes: [
+    { id: 'start', type: 'start', label: '开始' },
+    { id: 'task', type: 'activity', label: '处理任务', regionId: 'team' },
+    { id: 'check', type: 'decision', label: '通过？', regionId: 'team' },
+    { id: 'end', type: 'end', label: '结束' }
+  ],
+  edges: [
+    { source: 'start', target: 'task' },
+    { source: 'task', target: 'check' },
+    { source: 'check', target: 'end', label: '是' },
+    { source: 'check', target: 'task', label: '否', sourcePort: 'right', targetPort: 'right' }
+  ]
+}
+</script>
+<template>
+  <FlowchartDiagram
+    ref="chart"
+    :data="flowData"
+    preset="ocean"
+    :options="{ maxNodesPerColumn: 5, terminalPlacement: 'aligned' }"
+    :theme="{ fontFamily: 'Arial, Microsoft YaHei, sans-serif', activity: { fill: '#eefaf5' } }"
+  />
+  <button @click="chart?.download({ format: 'png', scale: 2 })">下载流程图</button>
+</template>
+```
+
+流程图 Ref 同样提供 getSvg / exportImage / download；支持 `renderFlowchartSvg` 和 `layoutFlowchart` 纯函数及 Vue SSR。全局安装会注册两种组件。
+
 ```vue
 <script setup>
 import { ref } from 'vue'
