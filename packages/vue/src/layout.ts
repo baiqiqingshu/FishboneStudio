@@ -1,6 +1,6 @@
 import { validateTree } from './tree'
 import { resolveTheme } from './themes'
-import { bonePoint } from './appearance'
+import { bonePoint, fishHeadMetrics } from './appearance'
 import type { FishboneNode, FishboneTheme, FishbonePreset, ResolvedFishboneTheme } from './types'
 export interface DiagramLine {
   kind: 'spine' | 'bone' | 'cause' | 'connector'
@@ -105,8 +105,12 @@ export function layoutFishbone(
     78,
     ...categories.map((c) => wrapLabel(c.node.label, 230, titleSize).length * titleSize * 1.4 + 48)
   )
-  const headText = wrapLabel(data.label, 184, size + 3)
-  const headHeight = Math.max(108, headText.length * (size + 3) * 1.4 + 50)
+  const headMetrics = fishHeadMetrics(theme.headStyle)
+  const headText = wrapLabel(data.label, headMetrics.textWidth, size + 3)
+  const headHeight = Math.max(
+    headMetrics.minHeight,
+    (headText.length * (size + 3) * 1.4 + 12) / headMetrics.textHeightRatio
+  )
   const spineY = Math.max(titleSpace + topSpan, headHeight / 2 + 20)
   const height = Math.max(spineY + bottomSpan + titleSpace, spineY + headHeight / 2 + 20)
   const lanes: number[] = []
@@ -126,7 +130,16 @@ export function layoutFishbone(
     opacity = 1,
     kind: DiagramLine['kind'] = 'connector'
   ) => lines.push({ x1, y1, x2, y2, color, width: thickness, opacity, kind })
-  line(74, spineY, width - 284, spineY, theme.spineColor, theme.lineWidth + 1, 1, 'spine')
+  line(
+    74,
+    spineY,
+    width - headMetrics.width - 16 + headMetrics.width * 0.22,
+    spineY,
+    theme.spineColor,
+    theme.lineWidth + 1,
+    1,
+    'spine'
+  )
   for (const category of categories) {
     const lane = Math.floor(category.index / 2)
     const start = 100 + lanes.slice(0, lane).reduce((sum, item) => sum + item, 0),
@@ -230,17 +243,21 @@ export function layoutFishbone(
   }
   boxes.push({
     kind: 'head',
-    x: width - 316,
+    x: width - headMetrics.width - 16,
     y: spineY - headHeight / 2,
-    width: 300,
+    width: headMetrics.width,
     height: headHeight,
     fill: theme.headBackground,
     stroke: theme.spineColor,
     radius: theme.nodeRadius + 4
   })
   labels.push({
-    x: width - (theme.headStyle === 'fish' || theme.headStyle === 'shark' ? 182 : 166),
-    y: spineY - (headText.length - 1) * (size + 3) * 0.7 + 5,
+    x: width - headMetrics.width - 16 + headMetrics.width * headMetrics.textCenter,
+    y:
+      spineY +
+      headHeight * (headMetrics.textY - 0.5) -
+      (headText.length - 1) * (size + 3) * 0.7 +
+      5,
     lines: headText,
     color: theme.headTextColor,
     size: size + 3,

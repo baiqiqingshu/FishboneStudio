@@ -65,17 +65,18 @@ export function renderFlowchartSvg(
       return `<g data-edge-label="${escapeXml(edge.edge.label!)}"><rect x="${label.x}" y="${label.y}" width="${label.width}" height="${label.height}" rx="5" fill="${escapeXml(layout.theme.background)}" stroke="${escapeXml(layout.theme.region.stroke)}" stroke-width=".7"/><text x="${cx}" y="${label.y + 16}" font-size="12" text-anchor="middle" fill="${escapeXml(edge.style.textColor)}">${label.lines.map((line, i) => `<tspan x="${cx}" dy="${i ? 17 : 0}">${escapeXml(line)}</tspan>`).join('')}</text></g>`
     })
     .join('')
-  const heading = data.title
-    ? `<text data-flow-title="true" x="${layout.options.padding}" y="${layout.options.padding + 18}" font-size="18" font-weight="600" fill="${escapeXml(layout.theme.region.titleColor)}">${wrapLabel(
-        data.title,
-        layout.width - layout.options.padding * 2,
-        18
-      )
-        .map(
-          (line, i) =>
-            `<tspan x="${layout.options.padding}" dy="${i ? 26 : 0}">${escapeXml(line)}</tspan>`
+  const heading =
+    data.title && layout.options.showTitle
+      ? `<text data-flow-title="true" x="${layout.options.padding}" y="${layout.options.padding + 18}" font-size="18" font-weight="600" fill="${escapeXml(layout.theme.region.titleColor)}">${wrapLabel(
+          data.title,
+          layout.width - layout.options.padding * 2,
+          18
         )
-        .join('')}</text>`
-    : ''
+          .map(
+            (line, i) =>
+              `<tspan x="${layout.options.padding}" dy="${i ? 26 : 0}">${escapeXml(line)}</tspan>`
+          )
+          .join('')}</text>`
+      : ''
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}" role="img" aria-label="${escapeXml(title)}" style="display:block;max-width:100%;height:auto" font-family="${escapeXml(layout.theme.fontFamily)}"><title>${escapeXml(title)} — 流程图</title><rect data-background="true" width="${layout.width}" height="${layout.height}" fill="${escapeXml(layout.theme.background)}"/>${heading}${regions}${layout.edges.map(edgeSvg).join('')}${layout.nodes.map(nodeSvg).join('')}${labels}${!data.nodes.length ? `<text x="${layout.width / 2}" y="${layout.height / 2}" text-anchor="middle" fill="${escapeXml(layout.theme.region.textColor)}">暂无节点，请添加活动或判断</text>` : ''}</svg>`
 }

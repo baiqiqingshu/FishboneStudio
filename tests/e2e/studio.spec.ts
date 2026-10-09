@@ -215,16 +215,95 @@ test('long CJK and wide Latin labels stay within the SVG canvas', async ({ page 
   expect(overflow).toEqual([])
 })
 
-test('refined fish heads have separate eye and mouth details and render the preview board', async ({
+test('fish heads blend pale fills with gills and reference silhouettes and render the preview board', async ({
   page
 }, testInfo) => {
   const head = page.locator('.fishbone-diagram [data-part="head"]')
-  await expect(head.locator('[data-feature="eye"] ellipse')).toHaveCount(1)
-  await expect(head.locator('[data-feature="mouth"]')).toHaveAttribute('stroke-linecap', 'round')
+  await expect(head.locator('[data-feature="eye"]')).toHaveCount(1)
+  await expect(head).toHaveAttribute('fill', '#edf6f5')
+  await expect(head.locator('[data-feature="gill"]')).toHaveCount(1)
+  await expect(head.locator('[data-feature="mouth"]')).toHaveCount(0)
   await page.getByLabel('鱼头造型', { exact: true }).selectOption('shark')
-  await expect(head.locator('[data-feature="eye"] path')).toHaveCount(1)
-  await expect(head.locator('[data-feature="gill"]')).toHaveCount(3)
+  await expect(head.locator('[data-feature="silhouette"]')).toHaveAttribute('data-mouth', 'notch')
+  await expect(head.locator('[data-feature="eye"]')).toHaveCount(1)
+  await page.getByLabel('鱼头造型', { exact: true }).selectOption('slim')
+  await expect(head.locator('[data-feature="mouth"]')).toHaveAttribute('stroke-linecap', 'round')
+  await expect(head.locator('[data-feature="gill"]')).toHaveCount(1)
   const preview = await readFile(new URL('../../docs/head-styles.svg', import.meta.url), 'utf8')
   await page.setContent(preview)
   await page.locator('body > svg').screenshot({ path: testInfo.outputPath('head-styles.png') })
+})
+
+test('offers larger fish heads and text color input with curated swatches', async ({
+  page
+}, info) => {
+  const head = page.locator('.fishbone-diagram [data-part="head"]')
+  const initial = await head.evaluate((node) => {
+    const box = (node as SVGGraphicsElement).getBBox()
+    return box.width * box.height
+  })
+  for (const style of ['roundfish', 'carp', 'sunfish']) {
+    await page.getByLabel('鱼头造型', { exact: true }).selectOption(style)
+    await expect(head).toHaveAttribute('data-style', style)
+    expect(
+      await head.evaluate((node) => {
+        const box = (node as SVGGraphicsElement).getBBox()
+        return box.width * box.height
+      })
+    ).toBeGreaterThan(initial * 1.2)
+  }
+  await page.getByRole('button', { name: '自定义样式', exact: false }).click()
+  await page.getByLabel('鱼头色块', { exact: true }).fill('#eefaf5')
+  await expect(head).toHaveAttribute('fill', '#eefaf5')
+  await page.getByRole('button', { name: '鱼头色块预设色板', exact: true }).click()
+  await page.getByRole('button', { name: '鱼头色块 浅杏 #fff2e8', exact: true }).click()
+  await expect(head).toHaveAttribute('fill', '#fff2e8')
+  await page.getByRole('button', { name: '画布背景无背景色', exact: true }).click()
+  await expect(page.locator('.fishbone-diagram [data-background]')).toHaveAttribute(
+    'fill',
+    'transparent'
+  )
+  await page.screenshot({ path: info.outputPath('high-fish-head.png'), fullPage: true })
+})
+
+test('keeps short and long text within fish head contours and apart from eyes and gills', async ({
+  page
+}) => {
+  await page.getByRole('button', { name: 'JSON 编辑', exact: true }).click()
+  for (const label of ['产品质量不达标', '问题分析文字'.repeat(20)]) {
+    await page.getByLabel('树数据 JSON', { exact: true }).fill(JSON.stringify({ label }))
+    await page.getByRole('button', { name: '应用数据', exact: true }).click()
+    for (const style of ['fish', 'slim', 'shark', 'roundfish', 'carp', 'sunfish', 'triangle']) {
+      await page.getByLabel('鱼头造型', { exact: true }).selectOption(style)
+      const result = await page.locator('.fishbone-diagram svg').evaluate((svg) => {
+        const body = svg.querySelector('[data-feature="silhouette"]') as SVGGeometryElement
+        const label = [...svg.querySelectorAll(':scope > text')].at(-1)!
+        const features = [
+          ...svg.querySelectorAll('[data-feature="eye"], [data-feature="gill"]')
+        ].map((feature) => (feature as SVGGraphicsElement).getBBox())
+        const outside = [...label.querySelectorAll('tspan')]
+          .filter((span) => {
+            const box = (span as SVGGraphicsElement).getBBox()
+            return (
+              [
+                [box.x, box.y],
+                [box.x + box.width, box.y],
+                [box.x, box.y + box.height],
+                [box.x + box.width, box.y + box.height]
+              ].some(([x, y]) => !body.isPointInFill(new DOMPoint(x, y))) ||
+              features.some(
+                (feature) =>
+                  box.x < feature.x + feature.width + 3 &&
+                  box.x + box.width > feature.x - 3 &&
+                  box.y < feature.y + feature.height + 3 &&
+                  box.y + box.height > feature.y - 3
+              )
+            )
+          })
+          .map((span) => span.textContent)
+        return { outside }
+      })
+      expect(result.outside, `${style}: text outside contour or overlapping features`).toEqual([])
+    }
+  }
 })

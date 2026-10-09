@@ -5,7 +5,8 @@ export interface FishboneNode {
 }
 export type FishbonePreset = 'ocean' | 'classic' | 'forest' | 'sunset' | 'midnight'
 export interface FishboneAppearance {
-  headStyle: 'fish' | 'shark' | 'rounded' | 'label'
+  headStyle:
+    'fish' | 'slim' | 'shark' | 'roundfish' | 'carp' | 'sunfish' | 'triangle' | 'rounded' | 'label'
   tailStyle: 'fork' | 'fan' | 'crescent' | 'chevron'
   spineStyle: 'tapered' | 'vertebrae' | 'double' | 'line'
   boneStyle: 'curved' | 'tapered' | 'jointed' | 'straight'

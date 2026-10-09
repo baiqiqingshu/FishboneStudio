@@ -1,6 +1,6 @@
 {
   "name": "@fishbone/vue",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "Vue 3 fishbone and automatic region flowchart diagrams with customizable styles and image export",
   "license": "MIT",

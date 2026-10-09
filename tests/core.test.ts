@@ -158,6 +158,41 @@ describe('Vue integration and exports', () => {
 })
 
 describe('SVG anatomy styles', () => {
+  it('offers larger pale heads with minimal eyes and gills and reserves the text area', () => {
+    const base = layoutFishbone({ label: '产品质量分析' }).boxes.find((box) => box.kind === 'head')!
+    for (const headStyle of ['roundfish', 'carp', 'sunfish'] as const) {
+      const layout = layoutFishbone({ label: '产品质量分析' }, 'ocean', { headStyle })
+      const box = layout.boxes.find((box) => box.kind === 'head')!
+      expect(box.height).toBeGreaterThan(base.height)
+      expect(box.width * box.height).toBeGreaterThan(base.width * base.height * 1.2)
+      const xml = new DOMParser().parseFromString(
+        renderFishboneSvg({ label: '产品质量分析' }, 'ocean', { headStyle }),
+        'image/svg+xml'
+      )
+      expect(xml.querySelector('[data-feature="mouth"]')).toBeNull()
+      expect(xml.querySelector('[data-feature="silhouette"]')).not.toBeNull()
+      if (headStyle !== 'roundfish')
+        expect(xml.querySelector('[data-feature="gill"]')).not.toBeNull()
+      const eye = xml.querySelector('[data-feature="eye"]')
+      if (eye) {
+        const eyeBottom = Number(eye.getAttribute('cy')) + Number(eye.getAttribute('r'))
+        const label = layout.labels.at(-1)!
+        expect(label.y - label.size).toBeGreaterThan(eyeBottom + 5)
+      }
+    }
+  })
+  it('preserves a slender head with restrained details and coordinated theme colors', () => {
+    const slim = layoutFishbone({ label: '问题分析' }, 'ocean', { headStyle: 'slim' })
+    expect(slim.boxes.at(-1)!.height).toBeLessThan(120)
+    const xml = new DOMParser().parseFromString(
+      renderFishboneSvg({ label: '问题分析' }, 'ocean', { headStyle: 'slim' }),
+      'image/svg+xml'
+    )
+    expect(xml.querySelector('[data-feature="gill"]')).not.toBeNull()
+    expect(xml.querySelector('[data-feature="eye"]')?.getAttribute('r')).toBe('3.2')
+    expect(xml.querySelector('[data-part="head"]')?.getAttribute('fill')).toBe('#edf6f5')
+    expect(xml.querySelector('[data-part="head"]')?.getAttribute('stroke')).toBe('#246f65')
+  })
   const choices = Object.entries(fishboneAppearanceOptions).flatMap(([key, values]) =>
     values.map((value) => ({ key: key as keyof FishboneAppearance, value }))
   )

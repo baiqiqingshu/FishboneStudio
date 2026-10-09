@@ -33,6 +33,7 @@ import {
   X
 } from '@lucide/vue'
 import { flowExamples } from './flowExamples'
+import ColorInput from './ColorInput.vue'
 import './flowchart.css'
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value))
@@ -744,6 +745,9 @@ defineExpose({
             <div class="flow-canvas-scroll">
               <div
                 class="flow-canvas-surface"
+                :class="{
+                  'transparent-surface': ['transparent', 'none'].includes(currentTheme.background)
+                }"
                 :style="{ width: `${(Math.max(120, fittedWidth) * zoom) / 100}px` }"
               >
                 <FlowchartDiagram
@@ -802,6 +806,45 @@ defineExpose({
             <button class="text-button" @click="options = {}">恢复默认</button>
           </div>
           <div class="flow-layout-fields">
+            <label class="flow-toggle flow-title-toggle"
+              ><input
+                type="checkbox"
+                aria-label="显示流程图标题"
+                :checked="currentOptions.showTitle"
+                @change="setOption('showTitle', ($event.target as HTMLInputElement).checked)"
+              /><span>显示流程图标题<small>默认隐藏，导出遵循此设置</small></span></label
+            >
+            <label
+              >图形最大宽度<input
+                type="number"
+                aria-label="流程图图形最大宽度"
+                min="120"
+                max="600"
+                :value="currentOptions.maxNodeWidth"
+                @change="
+                  setOption('maxNodeWidth', Number(($event.target as HTMLInputElement).value))
+                "
+            /></label>
+            <label
+              >图形最大高度<input
+                type="number"
+                aria-label="流程图图形最大高度"
+                min="64"
+                max="600"
+                :value="currentOptions.maxNodeHeight"
+                @change="
+                  setOption('maxNodeHeight', Number(($event.target as HTMLInputElement).value))
+                "
+            /></label>
+            <label
+              >区域间距<input
+                type="number"
+                aria-label="流程图区域间距"
+                min="48"
+                max="200"
+                :value="currentOptions.regionGap"
+                @change="setOption('regionGap', Number(($event.target as HTMLInputElement).value))"
+            /></label>
             <label
               >每列最多节点<input
                 type="number"
@@ -856,6 +899,10 @@ defineExpose({
               ><span>区域列数<br /><small>按连接关系优化</small></span>
             </div>
           </div>
+          <p class="flow-hint flow-layout-hint">
+            尺寸以 px
+            为单位；间距为最小值，长连线标注会自动预留空间。超过尺寸的文字缩小或省略，可悬停查看全文。
+          </p>
         </section>
         <section class="styles-panel card">
           <div class="panel-header">
@@ -914,15 +961,13 @@ defineExpose({
               ><button class="text-button" @click="theme = {}">恢复主题默认</button>
             </div>
             <div class="flow-global-styles">
+              <ColorInput
+                label="流程图背景"
+                :model-value="currentTheme.background"
+                allow-transparent
+                @update:model-value="setGlobalStyle('background', $event)"
+              />
               <label
-                >画布背景<input
-                  type="color"
-                  aria-label="流程图背景"
-                  :value="currentTheme.background"
-                  @input="
-                    setGlobalStyle('background', ($event.target as HTMLInputElement).value)
-                  " /></label
-              ><label
                 >文字字体<select
                   aria-label="流程图文字字体"
                   :value="currentTheme.fontFamily"
@@ -964,16 +1009,14 @@ defineExpose({
               </button>
             </div>
             <div class="custom-fields">
-              <label v-for="field in colorFields" :key="field.key"
-                >{{ field.name
-                }}<input
-                  type="color"
-                  :aria-label="field.name"
-                  :value="styleValue(field.key)"
-                  @input="
-                    setShapeStyle(field.key, ($event.target as HTMLInputElement).value)
-                  " /></label
-              ><template v-if="!['region', 'edge'].includes(styleTarget)"
+              <ColorInput
+                v-for="field in colorFields"
+                :key="`${styleTarget}-${field.key}`"
+                :label="field.name"
+                :model-value="String(styleValue(field.key))"
+                @update:model-value="setShapeStyle(field.key, $event)"
+              />
+              <template v-if="!['region', 'edge'].includes(styleTarget)"
                 ><label
                   >分类字号 <span>{{ styleValue('fontSize') }} px</span
                   ><input

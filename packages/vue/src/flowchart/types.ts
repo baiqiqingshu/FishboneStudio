@@ -81,8 +81,12 @@ export type FlowchartThemeOverrides = Partial<
   edge?: Partial<FlowchartEdgeStyle>
 }
 export interface FlowchartLayoutOptions {
+  /** Visual heading only; the accessible title is retained. */
+  showTitle: boolean
   maxNodesPerColumn: number
   nodeWidth: number
+  maxNodeWidth: number
+  maxNodeHeight: number
   columnGap: number
   rowGap: number
   regionGap: number

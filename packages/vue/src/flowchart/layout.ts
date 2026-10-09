@@ -10,7 +10,8 @@ import type {
   FlowchartPlacedNode,
   FlowchartPlacedRegion,
   FlowchartLayout,
-  FlowchartNode
+  FlowchartNode,
+  FlowchartShapeStyle
 } from './types'
 
 interface Cell {
@@ -18,6 +19,36 @@ interface Cell {
   column: number
   row: number
   initialRow: number
+}
+function fitNodeText(
+  node: FlowchartNode,
+  style: FlowchartShapeStyle,
+  width: number,
+  maxHeight: number
+) {
+  const terminal = node.type === 'start' || node.type === 'end'
+  const factor = node.type === 'decision' ? 2 : node.shape === 'ellipse' ? 1.6 : 1
+  const inset = terminal ? 22 : node.type === 'decision' || node.shape === 'ellipse' ? 28 : 32
+  const minimum = terminal ? 44 : node.type === 'decision' ? 90 : node.shape === 'ellipse' ? 72 : 64
+  const textWidthLimit =
+    width * (node.type === 'decision' ? 0.47 : node.shape === 'ellipse' ? 0.68 : 0.8)
+  let fontSize = style.fontSize
+  let lines = wrapLabel(node.label, textWidthLimit, fontSize)
+  const requiredHeight = () =>
+    Math.ceil(Math.max(minimum, lines.length * fontSize * 1.45 * factor + inset))
+  while (requiredHeight() > maxHeight && fontSize > 10) {
+    fontSize = Math.max(10, fontSize - 1)
+    lines = wrapLabel(node.label, textWidthLimit, fontSize)
+  }
+  const capacity = Math.max(1, Math.floor((maxHeight - inset) / (fontSize * 1.45 * factor)))
+  if (lines.length > capacity) {
+    lines = lines.slice(0, capacity)
+    let last = lines.at(-1)!
+    while (last && textWidth(last + '…', fontSize) > textWidthLimit)
+      last = Array.from(last).slice(0, -1).join('')
+    lines[lines.length - 1] = last + '…'
+  }
+  return { lines, height: Math.min(maxHeight, requiredHeight()), style: { ...style, fontSize } }
 }
 function orderNodes(nodes: FlowchartNode[], edges: FlowchartData['edges']): FlowchartNode[] {
   const local = new Set(nodes.map((node) => node.id)),
@@ -112,6 +143,7 @@ export function layoutFlowchart(
   // Requested gaps are lower bounds; long annotations reserve their own space.
   const options = {
     ...configured,
+    nodeWidth: Math.min(configured.nodeWidth, configured.maxNodeWidth),
     rowGap: Math.max(configured.rowGap, labelHeight + 18),
     columnGap: Math.max(configured.columnGap, labelWidth + 20),
     regionGap: Math.max(configured.regionGap, labelWidth - 32)
@@ -163,39 +195,20 @@ export function layoutFlowchart(
   })
   const rows = Math.max(1, ...columns.flat().map((cell) => cell.row + 1))
   if (options.optimizeAlignment) optimizeRows(columns, data.edges, rows)
-  const styles = new Map(
-    data.nodes.map((node) => [node.id, { ...theme[node.type], ...node.style }])
-  )
-  const text = new Map(
+  const fitted = new Map(
     data.nodes.map((node) => [
       node.id,
-      wrapLabel(
-        node.label,
-        options.nodeWidth *
-          (node.type === 'decision' ? 0.47 : node.shape === 'ellipse' ? 0.68 : 0.8),
-        styles.get(node.id)!.fontSize
+      fitNodeText(
+        node,
+        { ...theme[node.type], ...node.style },
+        options.nodeWidth,
+        options.maxNodeHeight
       )
     ])
   )
-  const heights = new Map(
-    data.nodes.map((node) => {
-      const lines = text.get(node.id)!,
-        style = styles.get(node.id)!,
-        textHeight = lines.length * style.fontSize * 1.45
-      return [
-        node.id,
-        Math.ceil(
-          node.type === 'start' || node.type === 'end'
-            ? Math.max(44, textHeight + 22)
-            : node.type === 'decision'
-              ? Math.max(90, textHeight * 2 + 28)
-              : node.shape === 'ellipse'
-                ? Math.max(72, textHeight * 1.6 + 28)
-                : Math.max(64, textHeight + 32)
-        )
-      ]
-    })
-  )
+  const styles = new Map(data.nodes.map((node) => [node.id, fitted.get(node.id)!.style]))
+  const text = new Map(data.nodes.map((node) => [node.id, fitted.get(node.id)!.lines]))
+  const heights = new Map(data.nodes.map((node) => [node.id, fitted.get(node.id)!.height]))
   const rowHeight = Math.max(64, ...normal.map((node) => heights.get(node.id)!))
   const anticipatedWidth = Math.max(
     options.nodeWidth + options.padding * 2 + 52,
@@ -207,9 +220,10 @@ export function layoutFlowchart(
       ) +
       Math.max(0, preparedGroups.length - 1) * options.regionGap
   )
-  const titleBand = data.title
-    ? wrapLabel(data.title, anticipatedWidth - options.padding * 2, 18).length * 26 + 22
-    : 0
+  const titleBand =
+    data.title && options.showTitle
+      ? wrapLabel(data.title, anticipatedWidth - options.padding * 2, 18).length * 26 + 22
+      : 0
   const terminalGap = Math.max(48, labelHeight + 18)
   const startBand = start ? heights.get(start.id)! + terminalGap : 0
   const regionTop = options.padding + titleBand + startBand

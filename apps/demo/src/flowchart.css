@@ -175,6 +175,10 @@
   gap: 18px 22px;
   padding: 18px;
 }
+.flow-layout-hint {
+  padding: 0 18px 16px;
+  margin: 0;
+}
 .flow-layout-fields > label {
   display: flex;
   flex-direction: column;

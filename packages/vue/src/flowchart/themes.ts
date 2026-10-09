@@ -137,8 +137,11 @@ function structuredCopy<T>(value: T): T {
 }
 
 export const defaultFlowchartOptions: FlowchartLayoutOptions = {
+  showTitle: false,
   maxNodesPerColumn: 5,
   nodeWidth: 220,
+  maxNodeWidth: 360,
+  maxNodeHeight: 320,
   columnGap: 64,
   rowGap: 54,
   regionGap: 56,
@@ -156,6 +159,8 @@ export function resolveFlowchartOptions(
   const ranges = {
     maxNodesPerColumn: [1, 20],
     nodeWidth: [160, 360],
+    maxNodeWidth: [120, 600],
+    maxNodeHeight: [64, 600],
     columnGap: [48, 200],
     rowGap: [48, 200],
     regionGap: [48, 200],
@@ -172,7 +177,7 @@ export function resolveFlowchartOptions(
         !Number.isInteger(value)
       )
         throw new Error(`${key} 必须是 ${min}–${max} 的整数`)
-    } else if (['optimizeAlignment', 'balanceRegions'].includes(key)) {
+    } else if (['showTitle', 'optimizeAlignment', 'balanceRegions'].includes(key)) {
       if (typeof value !== 'boolean') throw new Error(`${key} 必须为布尔值`)
     } else if (key === 'terminalPlacement') {
       if (!['aligned', 'left', 'auto'].includes(String(value)))

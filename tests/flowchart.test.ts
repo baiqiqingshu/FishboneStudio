@@ -145,7 +145,7 @@ describe('flowchart contract and layout', () => {
             ],
         edges: [{ source: 'a', target: 'b', label: '长连线标注自动换行'.repeat(12) }]
       }
-      const layout = layoutFlowchart(data)
+      const layout = layoutFlowchart(data, 'ocean', {}, { showTitle: true })
       const edge = layout.edges[0]!,
         box = edge.label!
       expect(box.lines.length).toBeGreaterThan(1)
@@ -164,7 +164,10 @@ describe('flowchart contract and layout', () => {
       expect(
         edge.points.slice(1).some((point, i) => segmentHitsBox(edge.points[i]!, point, box))
       ).toBe(true)
-      const xml = new DOMParser().parseFromString(renderFlowchartSvg(data), 'image/svg+xml')
+      const xml = new DOMParser().parseFromString(
+        renderFlowchartSvg(data, 'ocean', {}, { showTitle: true }),
+        'image/svg+xml'
+      )
       const lines = xml.querySelectorAll('[data-flow-title] tspan')
       expect(lines.length).toBeGreaterThan(1)
       expect(layout.options.padding + 18 + (lines.length - 1) * 26 + 6).toBeLessThan(
@@ -190,6 +193,70 @@ describe('flowchart contract and layout', () => {
       }
     ] as FlowchartData[])
       expect(() => layoutFlowchart(data)).not.toThrow()
+  })
+  it('hides the visual heading by default without reserving space and preserves accessible metadata', () => {
+    const data = flowExamples[0]!.data
+    const hidden = layoutFlowchart(data),
+      shown = layoutFlowchart(data, 'ocean', {}, { showTitle: true })
+    const xml = new DOMParser().parseFromString(renderFlowchartSvg(data), 'image/svg+xml')
+    expect(xml.querySelector('[data-flow-title]')).toBeNull()
+    expect(xml.documentElement.getAttribute('aria-label')).toBe(data.title)
+    expect(hidden.height).toBeLessThan(shown.height)
+    expect(renderFlowchartSvg(data, 'ocean', {}, { showTitle: true })).toContain('data-flow-title')
+    expect(() => resolveFlowchartOptions({ showTitle: 'yes' as unknown as boolean })).toThrow()
+  })
+  it('caps every shape including decisions and terminals, fitting long labels inside', () => {
+    const data: FlowchartData = {
+      version: 1,
+      nodes: (['start', 'activity', 'decision', 'end'] as const).map((type, i) => ({
+        id: String(i),
+        type,
+        label: '流程图尺寸测试文字'.repeat(12)
+      })),
+      edges: [
+        { source: '0', target: '1' },
+        { source: '1', target: '2' },
+        { source: '2', target: '3' }
+      ]
+    }
+    for (const maxNodeHeight of [64, 120, 320]) {
+      const layout = layoutFlowchart(
+        data,
+        'ocean',
+        { fontSize: 32 },
+        { maxNodeWidth: 140, maxNodeHeight }
+      )
+      for (const node of layout.nodes) {
+        expect(node.width).toBeLessThanOrEqual(140)
+        expect(node.height).toBeLessThanOrEqual(maxNodeHeight)
+        const factor = node.node.type === 'decision' ? 2 : 1
+        expect(node.lines.length * node.style.fontSize * 1.45 * factor).toBeLessThan(node.height)
+        for (const line of node.lines) expect(line.length).toBeGreaterThan(0)
+      }
+      const xml = new DOMParser().parseFromString(
+        renderFlowchartSvg(data, 'ocean', { fontSize: 32 }, { maxNodeWidth: 140, maxNodeHeight }),
+        'image/svg+xml'
+      )
+      expect(xml.querySelector('[data-node-id="2"] title')?.textContent).toBe(data.nodes[2]!.label)
+      if (maxNodeHeight === 64)
+        expect(xml.querySelector('[data-node-id="2"] text')?.textContent).toContain('…')
+    }
+    expect(() => resolveFlowchartOptions({ maxNodeWidth: 0 })).toThrow()
+    expect(() => resolveFlowchartOptions({ maxNodeHeight: 63 })).toThrow()
+  })
+  it('applies region spacing and retains an explicitly transparent canvas', () => {
+    const data = flowExamples[0]!.data
+    const compact = layoutFlowchart(data, 'ocean', {}, { regionGap: 48 }),
+      spacious = layoutFlowchart(data, 'ocean', {}, { regionGap: 180 })
+    expect(spacious.width - compact.width).toBeCloseTo(
+      (spacious.options.regionGap - compact.options.regionGap) * 2
+    )
+    expect(spacious.regions[1]!.x - spacious.regions[0]!.x - spacious.regions[0]!.width).toBe(180)
+    const xml = new DOMParser().parseFromString(
+      renderFlowchartSvg(data, 'ocean', { background: 'transparent' }),
+      'image/svg+xml'
+    )
+    expect(xml.querySelector('[data-background]')?.getAttribute('fill')).toBe('transparent')
   })
   it('rejects dangling references, duplicate IDs, bad ports, styles, and version', () => {
     const valid = flowExamples[0]!.data

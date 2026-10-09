@@ -90,6 +90,109 @@ test('changes themes, per-shape colors and fonts, and splits dense regions', asy
   await page.getByLabel('开始结束布局', { exact: true }).selectOption('auto')
   await expect(page.getByRole('alert')).toHaveCount(0)
 })
+test('controls title visibility, shape limits and region spacing with persistent settings', async ({
+  page
+}) => {
+  await expect(page.locator('[data-flow-title]')).toHaveCount(0)
+  const initialHeight = Number(await page.locator('.flowchart-diagram svg').getAttribute('height'))
+  await page.getByLabel('显示流程图标题', { exact: true }).check()
+  await expect(page.locator('[data-flow-title]')).toContainText('采购申请与审批')
+  expect(
+    Number(await page.locator('.flowchart-diagram svg').getAttribute('height'))
+  ).toBeGreaterThan(initialHeight)
+  await page.getByLabel('流程图图形最大宽度', { exact: true }).fill('160')
+  await page.getByLabel('流程图图形最大宽度', { exact: true }).press('Tab')
+  await page.getByLabel('流程图图形最大高度', { exact: true }).fill('80')
+  await page.getByLabel('流程图图形最大高度', { exact: true }).press('Tab')
+  const dimensions = await page.locator('.flowchart-diagram [data-node-id]').evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const box = (node as SVGGraphicsElement).getBBox()
+      return { width: box.width, height: box.height }
+    })
+  )
+  for (const box of dimensions) {
+    expect(box.width).toBeLessThanOrEqual(160)
+    expect(box.height).toBeLessThanOrEqual(80)
+  }
+  const initialWidth = Number(await page.locator('.flowchart-diagram svg').getAttribute('width'))
+  await page.getByLabel('流程图区域间距', { exact: true }).fill('180')
+  await page.getByLabel('流程图区域间距', { exact: true }).press('Tab')
+  expect(
+    Number(await page.locator('.flowchart-diagram svg').getAttribute('width'))
+  ).toBeGreaterThan(initialWidth)
+  await expect(page.getByText('已自动保存', { exact: false })).toBeVisible()
+  await page.reload()
+  await expect(page.getByLabel('显示流程图标题', { exact: true })).toBeChecked()
+  await expect(page.getByLabel('流程图图形最大宽度', { exact: true })).toHaveValue('160')
+})
+test('accepts typed colors, validates errors and provides curated swatches without mobile overflow', async ({
+  page
+}, info) => {
+  await page.getByRole('button', { name: '自定义图形与文字', exact: true }).click()
+  await page.getByLabel('图形色块', { exact: true }).fill('rgb(37, 134, 155)')
+  await page.getByLabel('图形色块', { exact: true }).press('Tab')
+  await expect(page.locator('[data-node-type="activity"] rect').first()).toHaveAttribute(
+    'fill',
+    'rgb(37, 134, 155)'
+  )
+  await page.getByLabel('图形色块', { exact: true }).fill('wrong-color')
+  await page.getByLabel('图形色块', { exact: true }).press('Tab')
+  await expect(page.getByText('请输入有效色值', { exact: false })).toBeVisible()
+  await expect(page.locator('[data-node-type="activity"] rect').first()).toHaveAttribute(
+    'fill',
+    'rgb(37, 134, 155)'
+  )
+  await page.getByRole('button', { name: '图形色块预设色板', exact: true }).click()
+  await expect(
+    page.getByRole('group', { name: '图形色块预设颜色' }).getByRole('button')
+  ).toHaveCount(30)
+  await page.getByRole('button', { name: '图形色块 浅蓝 #edf3ff', exact: true }).click()
+  await expect(page.getByLabel('图形色块', { exact: true })).toHaveValue('#edf3ff')
+  await expect(page.getByText('请输入有效色值', { exact: false })).toHaveCount(0)
+  await page.getByRole('button', { name: '流程图背景无背景色', exact: true }).click()
+  await expect(page.locator('.flowchart-diagram [data-background]')).toHaveAttribute(
+    'fill',
+    'transparent'
+  )
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('button', { name: '图形色块预设色板', exact: true }).click()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: info.outputPath('color-mobile.png'), fullPage: true })
+})
+test('exports transparent PNG and white-backed JPEG backgrounds', async ({ page }, info) => {
+  await page.getByRole('button', { name: '自定义图形与文字', exact: true }).click()
+  await page.getByRole('button', { name: '流程图背景无背景色', exact: true }).click()
+  for (const format of ['png', 'jpeg']) {
+    await page.getByRole('button', { name: '导出流程图', exact: true }).click()
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: new RegExp(`^${format.toUpperCase()}`) })
+      .click()
+    const pending = page.waitForEvent('download')
+    await page
+      .getByRole('button', { name: `下载 ${format.toUpperCase()} 流程图`, exact: true })
+      .click()
+    const download = await pending,
+      output = info.outputPath(`transparent.${format}`)
+    await download.saveAs(output)
+    const bytes = await readFile(output)
+    const pixel = await page.evaluate(
+      async ({ source }) => {
+        const img = new Image()
+        img.src = source
+        await img.decode()
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const context = canvas.getContext('2d')!
+        context.drawImage(img, 0, 0)
+        return [...context.getImageData(0, 0, 1, 1).data]
+      },
+      { source: `data:image/${format};base64,${bytes.toString('base64')}` }
+    )
+    expect(pixel).toEqual(format === 'png' ? [0, 0, 0, 0] : [255, 255, 255, 255])
+  }
+})
 for (const format of ['png', 'jpeg', 'webp', 'svg'])
   test(`exports real ${format.toUpperCase()} flowcharts`, async ({ page }, info) => {
     await page.getByRole('button', { name: '导出流程图', exact: true }).click()

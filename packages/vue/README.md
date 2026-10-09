@@ -41,6 +41,8 @@ const flowData: FlowchartData = {
 
 流程图 Ref 同样提供 getSvg / exportImage / download；支持 `renderFlowchartSvg` 和 `layoutFlowchart` 纯函数及 Vue SSR。全局安装会注册两种组件。
 
+流程图 `options` 可设置 `showTitle`（默认 false）、`maxNodeWidth`（默认 360）、`maxNodeHeight`（默认 320）、`regionGap`（默认 56）。图形尺寸超过上限时，文字先缩小再省略；全文保留在节点提示中。无背景使用 `theme.background: 'transparent'`。
+
 ```vue
 <script setup>
 import { ref } from 'vue'
@@ -66,7 +68,7 @@ Props：`data: FishboneNode`、`preset: 'ocean' | 'classic' | 'forest' | 'sunset
 
 `theme` 可独立覆盖六项 SVG 造型：
 
-- `headStyle`: `fish` / `shark` / `rounded` / `label`
+- `headStyle`: `fish` / `slim` / `shark` / `roundfish` / `carp` / `sunfish` / `triangle` / `rounded` / `label`
 - `tailStyle`: `fork` / `fan` / `crescent` / `chevron`
 - `spineStyle`: `tapered` / `vertebrae` / `double` / `line`
 - `boneStyle`: `curved` / `tapered` / `jointed` / `straight`
@@ -74,6 +76,8 @@ Props：`data: FishboneNode`、`preset: 'ocean' | 'classic' | 'forest' | 'sunset
 - `causeStyle`: `dot` / `card` / `underline`（分类下第一层原因）
 
 造型可任意组合，随 PNG / JPEG / WebP / SVG 一起导出。`FishboneAppearance` 类型和 `fishboneAppearanceOptions` 可供外部界面集成使用。
+
+鱼头以浅色填充和细描边协调分支配色；`slim` 保留细长风格，`roundfish` / `carp` / `sunfish` / `triangle` 提供较高的大面积轮廓。眼睛使用小圆点，鱼鳃使用轻淡曲线；开口类型的嘴部融入轮廓。可通过 `headBackground` / `headTextColor` 调整鱼头和文字配色。
 
 Ref：`getSvg(): string`、`exportImage(options): Promise<Blob>`、`download(options): Promise<void>`。
 

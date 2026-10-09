@@ -11,52 +11,57 @@ const rect = (box: DiagramBox, radius = box.radius) =>
 
 function paintHead(box: DiagramBox, layout: DiagramLayout): string {
   const { x, y, width: w, height: h } = box
-  const cy = y + h / 2,
-    theme = layout.theme
-  const group = `data-part="head" data-style="${theme.headStyle}" fill="${xml(box.fill)}" stroke="${xml(box.stroke)}" stroke-width="${theme.lineWidth}" stroke-linejoin="round"`
-  let shape: string
-  if (theme.headStyle === 'fish') {
-    shape = path(
-      `M${x + 18} ${y + 14} C${x + 58} ${y + 2} ${x + 188} ${y + 2} ${x + 248} ${y + 20} C${x + 279} ${y + 30} ${x + w} ${cy - 20} ${x + w} ${cy} C${x + w} ${cy + 18} ${x + 273} ${y + h - 18} ${x + 243} ${y + h - 12} C${x + 179} ${y + h + 2} ${x + 58} ${y + h - 2} ${x + 18} ${y + h - 14} Q${x + 34} ${cy} ${x + 18} ${y + 14} Z`
-    )
-    shape += path(
-      `M${x + 34} ${cy - 24} Q${x + 45} ${cy} ${x + 34} ${cy + 24}`,
-      'data-feature="gill" fill="none" opacity=".3" stroke-width="1.3" stroke-linecap="round"'
-    )
-    shape += path(
-      `M${x + w - 24} ${cy + 10} Q${x + w - 14} ${cy + 16} ${x + w - 4} ${cy + 5}`,
-      `data-feature="mouth" fill="none" stroke="${xml(theme.headTextColor)}" stroke-width="1.4" stroke-linecap="round" opacity=".65"`
-    )
-  } else if (theme.headStyle === 'shark') {
-    shape = path(
-      `M${x + 12} ${y + 18} L${x + 56} ${y + 6} Q${x + 182} ${y + 1} ${x + 245} ${y + 26} L${x + w} ${cy} L${x + 258} ${y + h - 18} Q${x + 162} ${y + h + 3} ${x + 51} ${y + h - 5} L${x + 12} ${y + h - 16} L${x + 23} ${cy} Z`
-    )
-    for (let i = 0; i < 3; i++)
-      shape += path(
-        `M${x + 30 + i * 7} ${cy - 13} q-5 12 -4 26`,
-        'data-feature="gill" fill="none" opacity=".3" stroke-width="1.2" stroke-linecap="round"'
-      )
-    shape += path(
-      `M${x + w - 29} ${cy + 10} Q${x + w - 16} ${cy + 9} ${x + w - 6} ${cy + 2}`,
-      `data-feature="mouth" fill="none" stroke="${xml(theme.headTextColor)}" stroke-width="1.3" stroke-linecap="round" opacity=".65"`
-    )
-  } else if (theme.headStyle === 'rounded') {
+  const theme = layout.theme
+  const p = (a: number, b: number) => `${x + w * a} ${y + h * b}`
+  const style = theme.headStyle
+  const anatomical = !['rounded', 'label'].includes(style)
+  const group = `data-part="head" data-style="${style}" fill="${xml(box.fill)}" stroke="${anatomical ? xml(theme.headTextColor) : xml(box.stroke)}" stroke-opacity="${anatomical ? 0.4 : 1}" stroke-width="${anatomical ? Math.max(1, theme.lineWidth * 0.65) : theme.lineWidth}" stroke-linejoin="round"`
+  let shape = ''
+  let silhouette = ''
+  if (style === 'fish') {
+    silhouette = `M${p(0.11, 0.12)} C${p(0.23, 0.035)} ${p(0.65, 0.12)} ${p(0.9, 0.36)} Q${p(0.975, 0.44)} ${p(0.985, 0.52)} C${p(0.76, 0.72)} ${p(0.38, 0.955)} ${p(0.13, 0.92)} Q${p(0.045, 0.91)} ${p(0.065, 0.8)} C${p(0.13, 0.61)} ${p(0.13, 0.4)} ${p(0.065, 0.23)} Q${p(0.045, 0.16)} ${p(0.11, 0.12)} Z`
+  } else if (style === 'slim') {
+    silhouette = `M${p(0.075, 0.5)} C${p(0.075, 0.25)} ${p(0.29, 0.12)} ${p(0.56, 0.13)} C${p(0.8, 0.14)} ${p(0.965, 0.32)} ${p(0.98, 0.5)} C${p(0.965, 0.68)} ${p(0.8, 0.86)} ${p(0.56, 0.87)} C${p(0.29, 0.88)} ${p(0.075, 0.75)} ${p(0.075, 0.5)} Z`
+  } else if (style === 'shark') {
+    silhouette = `M${p(0.085, 0.085)} C${p(0.31, 0.025)} ${p(0.76, 0.12)} ${p(0.98, 0.43)} L${p(0.74, 0.5)} Q${p(0.83, 0.58)} ${p(0.935, 0.61)} C${p(0.745, 0.845)} ${p(0.43, 0.96)} ${p(0.095, 0.935)} Q${p(0.17, 0.5)} ${p(0.085, 0.085)} Z`
+  } else if (style === 'roundfish') {
+    silhouette = `M${p(0.13, 0.045)} C${p(0.37, 0.065)} ${p(0.745, 0.21)} ${p(0.955, 0.42)} Q${p(1, 0.5)} ${p(0.955, 0.58)} C${p(0.745, 0.79)} ${p(0.37, 0.935)} ${p(0.13, 0.955)} Q${p(0.055, 0.96)} ${p(0.055, 0.865)} L${p(0.055, 0.135)} Q${p(0.055, 0.04)} ${p(0.13, 0.045)} Z`
+  } else if (style === 'carp') {
+    silhouette = `M${p(0.075, 0.5)} C${p(0.075, 0.225)} ${p(0.225, 0.055)} ${p(0.44, 0.055)} C${p(0.67, 0.055)} ${p(0.88, 0.29)} ${p(0.975, 0.455)} Q${p(1, 0.5)} ${p(0.975, 0.545)} C${p(0.88, 0.71)} ${p(0.67, 0.945)} ${p(0.44, 0.945)} C${p(0.225, 0.945)} ${p(0.075, 0.775)} ${p(0.075, 0.5)} Z`
+  } else if (style === 'sunfish') {
+    silhouette = `M${p(0.1, 0.055)} C${p(0.43, 0.015)} ${p(0.76, 0.16)} ${p(0.98, 0.395)} L${p(0.65, 0.505)} Q${p(0.76, 0.6)} ${p(0.915, 0.65)} C${p(0.73, 0.865)} ${p(0.45, 0.98)} ${p(0.105, 0.945)} Q${p(0.2, 0.5)} ${p(0.1, 0.055)} Z`
+  } else if (style === 'triangle') {
+    silhouette = `M${p(0.12, 0.06)} L${p(0.965, 0.465)} Q${p(1, 0.5)} ${p(0.965, 0.535)} L${p(0.12, 0.94)} Q${p(0.075, 0.965)} ${p(0.075, 0.91)} L${p(0.075, 0.09)} Q${p(0.075, 0.035)} ${p(0.12, 0.06)} Z`
+  } else if (style === 'rounded') {
     shape = rect(box, Math.min(h / 2, 38))
-    shape += path(
-      `M${x + 17} ${cy - 16} V${cy + 16}`,
-      `stroke="${xml(theme.headTextColor)}" stroke-width="3" opacity=".4"`
-    )
   } else shape = rect(box)
-  if (theme.headStyle === 'fish' || theme.headStyle === 'shark') {
-    const shark = theme.headStyle === 'shark'
-    const eyeY = cy - (shark ? 14 : 20),
-      eyeX = x + (shark ? 250 : 255)
-    const outline = shark
-      ? path(
-          `M${eyeX - 8} ${eyeY + 1} Q${eyeX} ${eyeY - 7} ${eyeX + 8} ${eyeY - 1} Q${eyeX} ${eyeY + 7} ${eyeX - 8} ${eyeY + 1} Z`
-        )
-      : `<ellipse cx="${eyeX}" cy="${eyeY}" rx="7.5" ry="6.5"/>`
-    shape += `<g data-feature="eye" fill="${xml(theme.background)}" stroke="${xml(theme.headTextColor)}" stroke-width="1.15">${outline}${circle(eyeX + 1, eyeY, shark ? 2.6 : 3.1, `fill="${xml(theme.headTextColor)}" stroke="none"`)}${circle(eyeX + 1.8, eyeY - 1.1, 1.1, `fill="${xml(theme.background)}" stroke="none"`)}</g>`
+  if (anatomical) {
+    let details = ''
+    const notch = style === 'shark' || style === 'sunfish'
+    if (style === 'fish' || style === 'slim' || notch || style === 'carp') {
+      const eyeX = x + w * (notch ? 0.4 : style === 'slim' ? 0.84 : 0.67),
+        eyeY = y + h * (style === 'slim' ? 0.32 : 0.25)
+      const radius = style === 'slim' ? 3.2 : 4
+      details += circle(
+        eyeX,
+        eyeY,
+        radius,
+        `data-feature="eye" fill="${xml(theme.headTextColor)}" stroke="none" opacity=".75"`
+      )
+    }
+    if (!['triangle', 'roundfish'].includes(style)) {
+      details += path(
+        `M${p(0.15, 0.3)} C${p(0.12, 0.41)} ${p(0.12, 0.59)} ${p(0.15, 0.7)}`,
+        `data-feature="gill" fill="none" stroke="${xml(theme.headTextColor)}" stroke-width="1.2" stroke-opacity=".27" stroke-linecap="round"`
+      )
+    }
+    if (style === 'slim')
+      details += path(
+        `M${p(0.915, 0.58)} Q${p(0.946, 0.59)} ${p(0.97, 0.55)}`,
+        `data-feature="mouth" fill="none" stroke="${xml(theme.headTextColor)}" stroke-width="1" stroke-opacity=".5" stroke-linecap="round"`
+      )
+    shape =
+      path(silhouette, `data-feature="silhouette"${notch ? ' data-mouth="notch"' : ''}`) + details
   }
   return `<g ${group}>${shape}</g>`
 }

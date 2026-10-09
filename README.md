@@ -27,6 +27,8 @@ npm run test:e2e     # 实际浏览器：编辑、主题、存储、四种图片
 - **流程图工作台**：活动（方形 / 椭圆）、菱形判断、带标注的区域、箭头折线与分支回流；结构编辑和 JSON 编辑均可用。
 - 区域横排、区域内竖排、密集区域分列、连接关系优化行对齐；默认开始置顶、结束置底，纵向对齐。
 - 流程图可配置每列节点上限、布局策略，按图形类型调整颜色、文字字体、字号及字重。独立自动保存，不覆盖鱼骨图数据。
+- 流程图标题默认隐藏，支持标题开关、图形最大宽高和区域间距设置；可选择无背景并导出透明图片。
+- 两种工作台均支持粘贴色值、系统调色盘和 30 种精选颜色；鱼头支持浅色细描边的弧面、开口、高身三角与细长轮廓，并提供可点击预览。
 
 直接访问 http://127.0.0.1:5173/#flowchart ，或使用顶部图表选择器 / 左侧入口切换。
 
@@ -52,7 +54,7 @@ npm run test:e2e     # 实际浏览器：编辑、主题、存储、四种图片
 npm run build -w @fishbone/vue
 npm pack -w @fishbone/vue
 # 在你的 Vue 项目中安装生成的包（替换为实际文件路径）
-npm install D:/WorkProject/FishboneStudio/fishbone-vue-1.1.0.tgz
+npm install D:/WorkProject/FishboneStudio/fishbone-vue-1.2.0.tgz
 ```
 
 生成 ESM / CommonJS 两种构建和 TypeScript 声明。Vue 是 peer dependency，不会被打进组件库；无需额外引入 CSS。
@@ -131,14 +133,14 @@ interface FishboneTheme {
 
 ![鱼头造型](docs/head-styles.png)
 
-| 造型字段        | 可选值                                        | 说明                                         |
-| --------------- | --------------------------------------------- | -------------------------------------------- |
-| `headStyle`     | `fish` / `shark` / `rounded` / `label`        | 流线鱼头、鲨鱼头、胶囊、方框                 |
-| `tailStyle`     | `fork` / `fan` / `crescent` / `chevron`       | 双叉、扇形、月牙、折线鱼尾                   |
-| `spineStyle`    | `tapered` / `vertebrae` / `double` / `line`   | 流线脊骨、分节脊椎、双线、单线               |
-| `boneStyle`     | `curved` / `tapered` / `jointed` / `straight` | 弧形、渐细、关节、直线骨刺                   |
-| `categoryStyle` | `fin` / `pill` / `ribbon` / `outline`         | 根节点下一级分类的鱼鳍、胶囊、丝带、描边标签 |
-| `causeStyle`    | `dot` / `card` / `underline`                  | 分类下第一层原因的圆点、卡片、下划线连接     |
+| 造型字段        | 可选值                                                                                          | 说明                                                             |
+| --------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `headStyle`     | `fish` / `slim` / `shark` / `roundfish` / `carp` / `sunfish` / `triangle` / `rounded` / `label` | 弧面、细长、开口、高身圆角三角、水滴、扇面、极简三角、胶囊、方框 |
+| `tailStyle`     | `fork` / `fan` / `crescent` / `chevron`                                                         | 双叉、扇形、月牙、折线鱼尾                                       |
+| `spineStyle`    | `tapered` / `vertebrae` / `double` / `line`                                                     | 流线脊骨、分节脊椎、双线、单线                                   |
+| `boneStyle`     | `curved` / `tapered` / `jointed` / `straight`                                                   | 弧形、渐细、关节、直线骨刺                                       |
+| `categoryStyle` | `fin` / `pill` / `ribbon` / `outline`                                                           | 根节点下一级分类的鱼鳍、胶囊、丝带、描边标签                     |
+| `causeStyle`    | `dot` / `card` / `underline`                                                                    | 分类下第一层原因的圆点、卡片、下划线连接                         |
 
 ```vue
 <FishboneDiagram
@@ -156,6 +158,8 @@ interface FishboneTheme {
 ```
 
 所有造型使用独立 SVG 路径绘制，不依赖外部图片、CSS、滤镜或全局 ID；预览与四种图片导出使用相同几何。弧形及关节骨刺的原因连接点跟随曲线计算，长文字自动换行。
+
+鱼头默认采用浅色填充、细描边和深色文字，与各分类的配色保持协调。`slim` 为原有细长风格的改进版本；高身轮廓提供更多面积。文字会避开眼睛、鱼鳃及嘴部缺口。选择器与轮廓预览均支持切换，色块与文字颜色仍可独立调整。
 
 | Ref 方法                | 返回值          | 说明                              |
 | ----------------------- | --------------- | --------------------------------- |

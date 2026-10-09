@@ -7,6 +7,7 @@ import {
   validateTree,
   countNodes,
   renderFishboneSvg,
+  layoutFishbone,
   type FishboneAppearance,
   type FishboneNode,
   type FishbonePreset,
@@ -41,6 +42,7 @@ import {
 import TreeEditor from './TreeEditor.vue'
 import { examples } from './examples'
 import FlowWorkbench from './FlowWorkbench.vue'
+import ColorInput from './ColorInput.vue'
 
 const workbench = ref<'fishbone' | 'flowchart'>(
   location.hash === '#flowchart' ? 'flowchart' : 'fishbone'
@@ -175,8 +177,13 @@ const appearanceFields: {
     key: 'headStyle',
     title: '鱼头造型',
     options: [
-      { value: 'fish', label: '仿生鱼头' },
-      { value: 'shark', label: '锐角鲨鱼' },
+      { value: 'fish', label: '弧面鱼头 · 浅色' },
+      { value: 'slim', label: '细长鱼头 · 轻盈' },
+      { value: 'shark', label: '开口鱼头 · 缺口嘴' },
+      { value: 'roundfish', label: '圆角三角 · 高身' },
+      { value: 'carp', label: '水滴鱼头 · 饱满' },
+      { value: 'sunfish', label: '扇面鱼头 · 高身开口' },
+      { value: 'triangle', label: '极简三角 · 高身' },
       { value: 'rounded', label: '圆润胶囊' },
       { value: 'label', label: '经典方框' }
     ]
@@ -275,6 +282,30 @@ function commitTree(next: FishboneNode) {
 function nodeAt(next: FishboneNode, path: number[]) {
   return path.reduce((node, index) => node.children![index]!, next)
 }
+const headPreviews = computed(() =>
+  Object.fromEntries(
+    appearanceFields[0]!.options.map((option) => {
+      const theme = {
+        ...currentTheme.value,
+        fontSize: 14,
+        headStyle: option.value as FishboneAppearance['headStyle']
+      }
+      const data = { label: '问题分析' }
+      const layout = layoutFishbone(data, preset.value, theme)
+      const box = layout.boxes.find((box) => box.kind === 'head')!
+      const svg = renderFishboneSvg(data, preset.value, theme)
+      return [
+        option.value,
+        svg
+          .replace(/width="[^"]*" height="[^"]*"/, 'width="360" height="300"')
+          .replace(
+            /viewBox="[^"]*"/,
+            `viewBox="${box.x + box.width / 2 - 180} ${box.y + box.height / 2 - 150} 360 300"`
+          )
+      ]
+    })
+  )
+)
 function renameNode(path: number[], label: string) {
   const next = clone(data.value)
   nodeAt(next, path).label = label.trim() || '未命名节点'
@@ -459,7 +490,7 @@ function openExport() {
         <button @click="openLibraryTemplates">探索示例模板 <ArrowUpRight :size="14" /></button>
       </div>
       <div class="sidebar-bottom">
-        <span class="vue-logo">V</span><span>为 Vue 3 而构建<small>开源组件 · v1.1.0</small></span
+        <span class="vue-logo">V</span><span>为 Vue 3 而构建<small>开源组件 · v1.2.0</small></span
         ><button class="icon-button" aria-label="查看集成帮助" @click="openLibraryDocs">
           <CircleHelp :size="17" />
         </button>
@@ -487,7 +518,7 @@ function openExport() {
             <option value="fishbone">鱼骨图工作台</option>
             <option value="flowchart">流程图工作台</option>
           </select>
-          <span class="version-tag">v1.1.0</span
+          <span class="version-tag">v1.2.0</span
           ><button class="text-button" @click="openLibraryDocs">
             <BookOpen :size="16" />开发文档 <ArrowUpRight :size="13" />
           </button>
@@ -598,7 +629,15 @@ function openExport() {
               </div>
               <div v-show="previewTab === 'diagram'" class="diagram-viewport">
                 <div class="diagram-scroll">
-                  <div class="diagram-surface" :style="{ width: `${zoom}%`, minWidth: `${zoom}%` }">
+                  <div
+                    class="diagram-surface"
+                    :class="{
+                      'transparent-surface': ['transparent', 'none'].includes(
+                        currentTheme.background
+                      )
+                    }"
+                    :style="{ width: `${zoom}%`, minWidth: `${zoom}%` }"
+                  >
                     <FishboneDiagram
                       ref="diagram"
                       :data="data"
@@ -728,6 +767,25 @@ function openExport() {
                   <Fish :size="15" /><strong>鱼骨造型</strong
                   ><span>每个部位，都可以有自己的表达</span>
                 </div>
+                <div class="head-gallery" role="group" aria-label="鱼头轮廓预览">
+                  <button
+                    v-for="option in appearanceFields[0]!.options"
+                    :key="option.value"
+                    class="head-choice"
+                    :class="{ chosen: currentTheme.headStyle === option.value }"
+                    :aria-pressed="currentTheme.headStyle === option.value"
+                    :aria-label="`选择鱼头 ${option.label}`"
+                    @click="setCustom('headStyle', option.value)"
+                  >
+                    <div
+                      class="head-choice-preview"
+                      aria-hidden="true"
+                      v-html="headPreviews[option.value]"
+                    />
+                    <span>{{ option.label }}</span
+                    ><Check v-if="currentTheme.headStyle === option.value" :size="12" />
+                  </button>
+                </div>
                 <div class="appearance-grid">
                   <label v-for="field in appearanceFields" :key="field.key"
                     ><span>{{ field.title }}</span
@@ -758,31 +816,33 @@ function openExport() {
                   ><button class="text-button" @click="custom = {}">恢复主题默认</button>
                 </div>
                 <div class="custom-fields">
+                  <ColorInput
+                    label="画布背景"
+                    :model-value="currentTheme.background"
+                    allow-transparent
+                    @update:model-value="setCustom('background', $event)"
+                  />
+                  <ColorInput
+                    label="主骨颜色"
+                    :model-value="currentTheme.spineColor"
+                    @update:model-value="setCustom('spineColor', $event)"
+                  />
+                  <ColorInput
+                    label="文字颜色"
+                    :model-value="currentTheme.textColor"
+                    @update:model-value="setCustom('textColor', $event)"
+                  />
+                  <ColorInput
+                    label="鱼头色块"
+                    :model-value="currentTheme.headBackground"
+                    @update:model-value="setCustom('headBackground', $event)"
+                  />
+                  <ColorInput
+                    label="鱼头文字"
+                    :model-value="currentTheme.headTextColor"
+                    @update:model-value="setCustom('headTextColor', $event)"
+                  />
                   <label
-                    >画布背景<input
-                      type="color"
-                      aria-label="画布背景"
-                      :value="currentTheme.background"
-                      @input="
-                        setCustom('background', ($event.target as HTMLInputElement).value)
-                      " /></label
-                  ><label
-                    >主骨颜色<input
-                      type="color"
-                      aria-label="主骨颜色"
-                      :value="currentTheme.spineColor"
-                      @input="
-                        setCustom('spineColor', ($event.target as HTMLInputElement).value)
-                      " /></label
-                  ><label
-                    >文字颜色<input
-                      type="color"
-                      aria-label="文字颜色"
-                      :value="currentTheme.textColor"
-                      @input="
-                        setCustom('textColor', ($event.target as HTMLInputElement).value)
-                      " /></label
-                  ><label
                     >字体大小 <span>{{ currentTheme.fontSize }} px</span
                     ><input
                       type="range"
@@ -819,15 +879,16 @@ function openExport() {
                   /></label>
                 </div>
                 <div class="branch-colors">
-                  <span>分支配色</span
-                  ><input
-                    v-for="(color, index) in currentTheme.branchColors"
-                    :key="index"
-                    type="color"
-                    :aria-label="`分支颜色 ${index + 1}`"
-                    :value="color"
-                    @input="setBranchColor(index, ($event.target as HTMLInputElement).value)"
-                  />
+                  <span>分支配色</span>
+                  <div class="branch-color-fields">
+                    <ColorInput
+                      v-for="(color, index) in currentTheme.branchColors"
+                      :key="index"
+                      :label="`分支颜色 ${index + 1}`"
+                      :model-value="color"
+                      @update:model-value="setBranchColor(index, $event)"
+                    />
+                  </div>
                 </div>
               </div>
             </section>
