@@ -4,7 +4,16 @@ export interface FishboneNode {
   children?: FishboneNode[]
 }
 export type FishbonePreset = 'ocean' | 'classic' | 'forest' | 'sunset' | 'midnight'
-export interface FishboneTheme {
+export interface FishboneAppearance {
+  headStyle: 'fish' | 'shark' | 'rounded' | 'label'
+  tailStyle: 'fork' | 'fan' | 'crescent' | 'chevron'
+  spineStyle: 'tapered' | 'vertebrae' | 'double' | 'line'
+  boneStyle: 'curved' | 'tapered' | 'jointed' | 'straight'
+  categoryStyle: 'fin' | 'pill' | 'ribbon' | 'outline'
+  causeStyle: 'dot' | 'card' | 'underline'
+}
+export type ResolvedFishboneTheme = FishboneTheme & FishboneAppearance
+export interface FishboneTheme extends Partial<FishboneAppearance> {
   background: string
   spineColor: string
   branchColors: string[]

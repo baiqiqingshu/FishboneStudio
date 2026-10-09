@@ -115,6 +115,36 @@ interface FishboneTheme {
 
 颜色可传 CSS 颜色值，透明背景使用 `background: 'transparent'`；`branchColors` 会循环分配到分类。`fontSize` 上限 40、`lineWidth` 上限 12、`nodeRadius` 上限 40。
 
+造型也通过 `theme` 独立配置，五套主题各自提供默认组合。老版本只传颜色的配置仍然有效。
+
+![鱼头造型](docs/head-styles.png)
+
+| 造型字段        | 可选值                                        | 说明                                         |
+| --------------- | --------------------------------------------- | -------------------------------------------- |
+| `headStyle`     | `fish` / `shark` / `rounded` / `label`        | 流线鱼头、鲨鱼头、胶囊、方框                 |
+| `tailStyle`     | `fork` / `fan` / `crescent` / `chevron`       | 双叉、扇形、月牙、折线鱼尾                   |
+| `spineStyle`    | `tapered` / `vertebrae` / `double` / `line`   | 流线脊骨、分节脊椎、双线、单线               |
+| `boneStyle`     | `curved` / `tapered` / `jointed` / `straight` | 弧形、渐细、关节、直线骨刺                   |
+| `categoryStyle` | `fin` / `pill` / `ribbon` / `outline`         | 根节点下一级分类的鱼鳍、胶囊、丝带、描边标签 |
+| `causeStyle`    | `dot` / `card` / `underline`                  | 分类下第一层原因的圆点、卡片、下划线连接     |
+
+```vue
+<FishboneDiagram
+  :data="data"
+  preset="ocean"
+  :theme="{
+    headStyle: 'fish',
+    tailStyle: 'fan',
+    spineStyle: 'vertebrae',
+    boneStyle: 'curved',
+    categoryStyle: 'fin',
+    causeStyle: 'card'
+  }"
+/>
+```
+
+所有造型使用独立 SVG 路径绘制，不依赖外部图片、CSS、滤镜或全局 ID；预览与四种图片导出使用相同几何。弧形及关节骨刺的原因连接点跟随曲线计算，长文字自动换行。
+
 | Ref 方法                | 返回值          | 说明                              |
 | ----------------------- | --------------- | --------------------------------- |
 | `getSvg()`              | `string`        | 获取独立 SVG 源码                 |

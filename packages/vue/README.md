@@ -25,6 +25,17 @@ Vue >= 3.5；无需引入 CSS。支持 ESM、CommonJS 和 TypeScript 声明。
 
 Props：`data: FishboneNode`、`preset: 'ocean' | 'classic' | 'forest' | 'sunset' | 'midnight'`、`theme: Partial<FishboneTheme>`。
 
+`theme` 可独立覆盖六项 SVG 造型：
+
+- `headStyle`: `fish` / `shark` / `rounded` / `label`
+- `tailStyle`: `fork` / `fan` / `crescent` / `chevron`
+- `spineStyle`: `tapered` / `vertebrae` / `double` / `line`
+- `boneStyle`: `curved` / `tapered` / `jointed` / `straight`
+- `categoryStyle`: `fin` / `pill` / `ribbon` / `outline`（一级分类）
+- `causeStyle`: `dot` / `card` / `underline`（分类下第一层原因）
+
+造型可任意组合，随 PNG / JPEG / WebP / SVG 一起导出。`FishboneAppearance` 类型和 `fishboneAppearanceOptions` 可供外部界面集成使用。
+
 Ref：`getSvg(): string`、`exportImage(options): Promise<Blob>`、`download(options): Promise<void>`。
 
 导出选项：`format: 'png' | 'jpeg' | 'webp' | 'svg'`（默认 png）、`scale: 0.1–4`（默认 2）、`quality: 0–1`（默认 0.92）、`filename`、`background`。

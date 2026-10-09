@@ -6,6 +6,8 @@ import {
   resolveTheme,
   validateTree,
   countNodes,
+  renderFishboneSvg,
+  type FishboneAppearance,
   type FishboneNode,
   type FishbonePreset,
   type FishboneTheme,
@@ -123,6 +125,86 @@ const themeList: { key: FishbonePreset; name: string; description: string }[] = 
   { key: 'forest', name: '自然森林', description: '柔和 · 生机' },
   { key: 'sunset', name: '落日暖光', description: '温暖 · 灵感' },
   { key: 'midnight', name: '深邃夜色', description: '沉静 · 聚焦' }
+]
+const themePreviews = Object.fromEntries(
+  themeList.map((theme) => [
+    theme.key,
+    renderFishboneSvg(
+      {
+        label: '问题',
+        children: [
+          { label: '原因', children: [{ label: '因素' }] },
+          { label: '原因', children: [{ label: '因素' }] }
+        ]
+      },
+      theme.key
+    )
+  ])
+)
+const appearanceFields: {
+  key: keyof FishboneAppearance
+  title: string
+  options: { value: string; label: string }[]
+}[] = [
+  {
+    key: 'headStyle',
+    title: '鱼头造型',
+    options: [
+      { value: 'fish', label: '仿生鱼头' },
+      { value: 'shark', label: '锐角鲨鱼' },
+      { value: 'rounded', label: '圆润胶囊' },
+      { value: 'label', label: '经典方框' }
+    ]
+  },
+  {
+    key: 'tailStyle',
+    title: '鱼尾造型',
+    options: [
+      { value: 'fork', label: '双叉鱼尾' },
+      { value: 'fan', label: '扇形鱼尾' },
+      { value: 'crescent', label: '月牙鱼尾' },
+      { value: 'chevron', label: '极简折线' }
+    ]
+  },
+  {
+    key: 'categoryStyle',
+    title: '分类鱼鳍',
+    options: [
+      { value: 'fin', label: '鱼鳍标签' },
+      { value: 'pill', label: '圆润胶囊' },
+      { value: 'ribbon', label: '燕尾丝带' },
+      { value: 'outline', label: '经典描边' }
+    ]
+  },
+  {
+    key: 'spineStyle',
+    title: '主干造型',
+    options: [
+      { value: 'tapered', label: '流线脊骨' },
+      { value: 'vertebrae', label: '分节脊椎' },
+      { value: 'double', label: '双线骨架' },
+      { value: 'line', label: '简约单线' }
+    ]
+  },
+  {
+    key: 'boneStyle',
+    title: '骨刺造型',
+    options: [
+      { value: 'curved', label: '弧形骨刺' },
+      { value: 'tapered', label: '渐细骨刺' },
+      { value: 'jointed', label: '关节骨刺' },
+      { value: 'straight', label: '直线骨刺' }
+    ]
+  },
+  {
+    key: 'causeStyle',
+    title: '一级原因节点',
+    options: [
+      { value: 'dot', label: '圆点连接' },
+      { value: 'card', label: '独立卡片' },
+      { value: 'underline', label: '下划线连接' }
+    ]
+  }
 ]
 let saveTimer: ReturnType<typeof setTimeout> | undefined
 watch(
@@ -579,44 +661,45 @@ function openExport() {
                     class="theme-thumbnail"
                     :style="{ background: fishboneThemes[theme.key].background }"
                   >
-                    <svg viewBox="0 0 150 62" aria-hidden="true">
-                      <path
-                        d="M12 31h109"
-                        :stroke="fishboneThemes[theme.key].spineColor"
-                        stroke-width="1.5"
-                      />
-                      <g
-                        v-for="n in 3"
-                        :key="n"
-                        :stroke="
-                          fishboneThemes[theme.key].branchColors[
-                            (n - 1) % fishboneThemes[theme.key].branchColors.length
-                          ]
-                        "
-                        fill="none"
-                        stroke-width="1.3"
-                      >
-                        <path
-                          :d="`M${n * 29 + 13} 31l-12 -21m12 21l-12 21M${n * 29 + 7} 21h-16M${n * 29 + 7} 41h-16`"
-                        />
-                      </g>
-                      <rect
-                        x="123"
-                        y="23"
-                        width="20"
-                        height="16"
-                        rx="4"
-                        :fill="fishboneThemes[theme.key].headBackground"
-                        :stroke="fishboneThemes[theme.key].spineColor"
-                        stroke-width=".8"
-                      /></svg
-                    ><span v-if="preset === theme.key" class="theme-check"
+                    <div
+                      class="theme-miniature"
+                      aria-hidden="true"
+                      v-html="themePreviews[theme.key]"
+                    />
+                    <span v-if="preset === theme.key" class="theme-check"
                       ><Check :size="11"
                     /></span>
                   </div>
                   <strong>{{ theme.name }}</strong
                   ><span>{{ theme.description }}</span>
                 </button>
+              </div>
+              <div class="appearance-settings">
+                <div class="appearance-heading">
+                  <Fish :size="15" /><strong>鱼骨造型</strong
+                  ><span>每个部位，都可以有自己的表达</span>
+                </div>
+                <div class="appearance-grid">
+                  <label v-for="field in appearanceFields" :key="field.key"
+                    ><span>{{ field.title }}</span
+                    ><select
+                      :aria-label="field.title"
+                      :value="currentTheme[field.key]"
+                      @change="setCustom(field.key, ($event.target as HTMLSelectElement).value)"
+                    >
+                      <option
+                        v-for="option in field.options"
+                        :key="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </option>
+                    </select></label
+                  >
+                </div>
+                <div class="appearance-note">
+                  分类鱼鳍对应一级分类，原因节点对应分类下的第一层原因。造型会随图片一起导出。
+                </div>
               </div>
               <div v-if="showCustom" class="custom-settings">
                 <div class="custom-top">

@@ -6,7 +6,8 @@ import { layoutFishbone, wrapLabel, textWidth } from '../packages/vue/src/layout
 import { renderFishboneSvg } from '../packages/vue/src/svg'
 import { fishboneThemes, resolveTheme } from '../packages/vue/src/themes'
 import { exportSvgImage } from '../packages/vue/src/export'
-import type { FishboneNode, FishbonePreset } from '../packages/vue/src/types'
+import { fishboneAppearanceOptions, bonePoint } from '../packages/vue/src/appearance'
+import type { FishboneNode, FishbonePreset, FishboneAppearance } from '../packages/vue/src/types'
 
 const data: FishboneNode = {
   label: '项目延期',
@@ -153,5 +154,69 @@ describe('Vue integration and exports', () => {
     await expect(exportSvgImage(svg, { scale: 0 })).rejects.toThrow(/倍率/)
     await expect(exportSvgImage(svg, { quality: 2 })).rejects.toThrow(/质量/)
     await expect(exportSvgImage(svg, { format: 'gif' as 'png' })).rejects.toThrow(/格式/)
+  })
+})
+
+describe('SVG anatomy styles', () => {
+  const choices = Object.entries(fishboneAppearanceOptions).flatMap(([key, values]) =>
+    values.map((value) => ({ key: key as keyof FishboneAppearance, value }))
+  )
+  it.each(choices)('serializes $key=$value without external dependencies', ({ key, value }) => {
+    const svg = renderFishboneSvg(data, 'ocean', { [key]: value })
+    const xml = new DOMParser().parseFromString(svg, 'image/svg+xml')
+    expect(xml.querySelector('parsererror')).toBeNull()
+    expect(xml.querySelector('defs, image, style, foreignObject')).toBeNull()
+    const parts = {
+      headStyle: 'head',
+      tailStyle: 'tail',
+      spineStyle: 'spine',
+      boneStyle: 'bone',
+      categoryStyle: 'category',
+      causeStyle: 'cause'
+    }
+    expect(xml.querySelector(`[data-part="${parts[key]}"]`)?.getAttribute('data-style')).toBe(value)
+    expect(svg).not.toMatch(/NaN|Infinity|undefined/)
+  })
+  it('rejects unknown styles and preserves defaults for old partial themes', () => {
+    expect(() => resolveTheme('ocean', { headStyle: '<script>' as 'fish' })).toThrow(/headStyle/)
+    expect(resolveTheme('ocean', { fontSize: 18 }).headStyle).toBe('fish')
+    expect(resolveTheme('ocean', { headStyle: undefined }).headStyle).toBe('fish')
+  })
+  it.each(['curved', 'jointed', 'straight', 'tapered'] as const)(
+    'attaches horizontal causes exactly to %s ribs',
+    (boneStyle) => {
+      const layout = layoutFishbone(data, 'ocean', { boneStyle })
+      for (const rib of layout.lines.filter((line) => line.kind === 'bone')) {
+        const attached = layout.lines.filter(
+          (line) =>
+            line.kind === 'cause' &&
+            line.x1 < rib.x1 &&
+            line.x1 > rib.x1 - 400 &&
+            Math.sign(line.y1 - rib.y1) === Math.sign(rib.y2 - rib.y1)
+        )
+        for (const cause of attached) {
+          const t = (cause.y1 - rib.y1) / (rib.y2 - rib.y1)
+          expect(cause.x2).toBeCloseTo(bonePoint(rib.x1, rib.y1, rib.x2, rib.y2, t, boneStyle).x)
+        }
+      }
+    }
+  )
+  it('keeps every anatomical style inside the layout at large font sizes', () => {
+    for (const choice of choices) {
+      const layout = layoutFishbone(
+        {
+          label: '问题'.repeat(60),
+          children: [{ label: '原因'.repeat(60), children: [{ label: 'W'.repeat(120) }] }]
+        },
+        'ocean',
+        { [choice.key]: choice.value, fontSize: 40 }
+      )
+      for (const box of layout.boxes) {
+        expect(box.x).toBeGreaterThanOrEqual(0)
+        expect(box.x + box.width).toBeLessThanOrEqual(layout.width)
+        expect(box.y).toBeGreaterThanOrEqual(0)
+        expect(box.y + box.height).toBeLessThanOrEqual(layout.height)
+      }
+    }
   })
 })

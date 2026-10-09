@@ -1,6 +1,13 @@
-import type { FishbonePreset, FishboneTheme } from './types'
-export const fishboneThemes: Record<FishbonePreset, FishboneTheme> = {
+import type { FishbonePreset, FishboneTheme, ResolvedFishboneTheme } from './types'
+import { fishboneAppearanceOptions } from './appearance'
+export const fishboneThemes: Record<FishbonePreset, ResolvedFishboneTheme> = {
   ocean: {
+    headStyle: 'fish',
+    tailStyle: 'fork',
+    spineStyle: 'tapered',
+    boneStyle: 'curved',
+    categoryStyle: 'fin',
+    causeStyle: 'dot',
     background: '#ffffff',
     spineColor: '#334155',
     branchColors: ['#14a89a', '#6695e8', '#e5a049', '#b18bdd', '#e17c90', '#70a87b'],
@@ -14,6 +21,12 @@ export const fishboneThemes: Record<FishbonePreset, FishboneTheme> = {
     nodeRadius: 10
   },
   classic: {
+    headStyle: 'rounded',
+    tailStyle: 'chevron',
+    spineStyle: 'line',
+    boneStyle: 'straight',
+    categoryStyle: 'outline',
+    causeStyle: 'underline',
     background: '#ffffff',
     spineColor: '#27272a',
     branchColors: ['#52525b', '#71717a', '#3f3f46', '#a1a1aa'],
@@ -27,6 +40,12 @@ export const fishboneThemes: Record<FishbonePreset, FishboneTheme> = {
     nodeRadius: 3
   },
   forest: {
+    headStyle: 'fish',
+    tailStyle: 'fan',
+    spineStyle: 'double',
+    boneStyle: 'curved',
+    categoryStyle: 'pill',
+    causeStyle: 'dot',
     background: '#f8fcf7',
     spineColor: '#365b3c',
     branchColors: ['#4c8861', '#8fa654', '#3f8e88', '#b29a54', '#679869'],
@@ -40,6 +59,12 @@ export const fishboneThemes: Record<FishbonePreset, FishboneTheme> = {
     nodeRadius: 12
   },
   sunset: {
+    headStyle: 'fish',
+    tailStyle: 'crescent',
+    spineStyle: 'tapered',
+    boneStyle: 'tapered',
+    categoryStyle: 'ribbon',
+    causeStyle: 'card',
     background: '#fffbf7',
     spineColor: '#854b43',
     branchColors: ['#db7961', '#e8ac55', '#c67d99', '#a58cc1', '#c19c60'],
@@ -53,6 +78,12 @@ export const fishboneThemes: Record<FishbonePreset, FishboneTheme> = {
     nodeRadius: 18
   },
   midnight: {
+    headStyle: 'shark',
+    tailStyle: 'fork',
+    spineStyle: 'vertebrae',
+    boneStyle: 'jointed',
+    categoryStyle: 'fin',
+    causeStyle: 'card',
     background: '#18212e',
     spineColor: '#cbd5e1',
     branchColors: ['#5eead4', '#93c5fd', '#fcd34d', '#c4b5fd', '#fda4af', '#86efac'],
@@ -69,7 +100,7 @@ export const fishboneThemes: Record<FishbonePreset, FishboneTheme> = {
 export function resolveTheme(
   preset: FishbonePreset = 'ocean',
   custom: Partial<FishboneTheme> = {}
-): FishboneTheme {
+): ResolvedFishboneTheme {
   const base = fishboneThemes[preset]
   if (!base) throw new Error(`未知样式：${preset}`)
   const overrides = Object.fromEntries(
@@ -83,6 +114,12 @@ export function resolveTheme(
   )
     throw new Error('branchColors 至少需要一种颜色')
   const theme = { ...base, ...overrides, branchColors: [...colors] }
+  for (const key of Object.keys(
+    fishboneAppearanceOptions
+  ) as (keyof typeof fishboneAppearanceOptions)[]) {
+    if (!(fishboneAppearanceOptions[key] as readonly unknown[]).includes(theme[key]))
+      throw new Error(`${key} 不支持样式：${String(theme[key])}`)
+  }
   for (const key of [
     'background',
     'spineColor',

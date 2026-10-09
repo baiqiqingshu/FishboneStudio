@@ -65,7 +65,10 @@ test('switches examples, presets, custom styles, zoom and overview', async ({ pa
   )
   await page.getByRole('button', { name: '自定义样式', exact: true }).click()
   await page.getByLabel('主骨颜色', { exact: true }).fill('#ff0000')
-  await expect(page.locator('.fishbone-diagram line').first()).toHaveAttribute('stroke', '#ff0000')
+  await expect(page.locator('.fishbone-diagram [data-part="spine"]')).toHaveAttribute(
+    'stroke',
+    '#ff0000'
+  )
   await page.getByLabel('字体大小', { exact: true }).fill('20')
   await expect(page.locator('.fishbone-diagram text').first()).toHaveAttribute('font-size', '21')
   await page.getByRole('button', { name: '放大', exact: true }).click()
@@ -77,7 +80,10 @@ test('switches examples, presets, custom styles, zoom and overview', async ({ pa
   await expect(page.locator('.overview-heading')).toContainText('项目交付延期')
   await page.getByRole('button', { name: '鱼骨图', exact: true }).click()
   await page.getByRole('button', { name: '恢复主题默认', exact: true }).click()
-  await expect(page.locator('.fishbone-diagram line').first()).toHaveAttribute('stroke', '#cbd5e1')
+  await expect(page.locator('.fishbone-diagram [data-part="spine"]')).toHaveAttribute(
+    'stroke',
+    '#cbd5e1'
+  )
 })
 
 for (const format of ['png', 'jpeg', 'webp', 'svg']) {
@@ -109,6 +115,8 @@ for (const format of ['png', 'jpeg', 'webp', 'svg']) {
     if (format === 'svg') {
       expect(bytes.toString()).toContain('<svg')
       expect(bytes.toString()).toContain('产品质量不达标')
+      expect(bytes.toString()).toContain('data-part="head" data-style="fish"')
+      expect(bytes.toString()).toContain('data-part="tail" data-style="fork"')
     }
     await expect(page.getByRole('dialog')).toHaveCount(0)
   })
@@ -123,6 +131,45 @@ test('mobile layout remains usable without page overflow', async ({ page }, test
     true
   )
   await page.screenshot({ path: testInfo.outputPath('mobile.png'), fullPage: true })
+})
+
+test('mixes anatomy styles, persists choices and downloads the same SVG', async ({
+  page
+}, testInfo) => {
+  await page.getByLabel('鱼头造型', { exact: true }).selectOption('shark')
+  await page.getByLabel('鱼尾造型', { exact: true }).selectOption('fan')
+  await page.getByLabel('主干造型', { exact: true }).selectOption('vertebrae')
+  await page.getByLabel('骨刺造型', { exact: true }).selectOption('jointed')
+  await page.getByLabel('分类鱼鳍', { exact: true }).selectOption('ribbon')
+  await page.getByLabel('一级原因节点', { exact: true }).selectOption('card')
+  for (const [part, style] of [
+    ['head', 'shark'],
+    ['tail', 'fan'],
+    ['spine', 'vertebrae'],
+    ['bone', 'jointed'],
+    ['category', 'ribbon'],
+    ['cause', 'card']
+  ])
+    await expect(page.locator(`.fishbone-diagram [data-part="${part}"]`).first()).toHaveAttribute(
+      'data-style',
+      style
+    )
+  await expect(page.getByText('已自动保存', { exact: false })).toBeVisible()
+  await page.reload()
+  await expect(page.getByLabel('鱼头造型', { exact: true })).toHaveValue('shark')
+  await expect(page.getByLabel('鱼尾造型', { exact: true })).toHaveValue('fan')
+  await page.getByRole('button', { name: '导出图片', exact: true }).click()
+  await page.getByRole('dialog').getByRole('button', { name: /^SVG/ }).click()
+  const pending = page.waitForEvent('download')
+  await page.getByRole('button', { name: '下载 SVG 图片', exact: true }).click()
+  const download = await pending
+  const filename = testInfo.outputPath('custom-anatomy.svg')
+  await download.saveAs(filename)
+  const svg = await readFile(filename, 'utf8')
+  expect(svg).toContain('data-part="head" data-style="shark"')
+  expect(svg).toContain('data-part="spine" data-style="vertebrae"')
+  await page.getByRole('button', { name: '清新海洋 轻盈 · 多彩' }).click()
+  await expect(page.getByLabel('鱼头造型', { exact: true })).toHaveValue('fish')
 })
 
 test('renders desktop and integration guide without browser errors', async ({ page }, testInfo) => {
@@ -166,4 +213,18 @@ test('long CJK and wide Latin labels stay within the SVG canvas', async ({ page 
       .map((text) => text.textContent)
   })
   expect(overflow).toEqual([])
+})
+
+test('refined fish heads have separate eye and mouth details and render the preview board', async ({
+  page
+}, testInfo) => {
+  const head = page.locator('.fishbone-diagram [data-part="head"]')
+  await expect(head.locator('[data-feature="eye"] ellipse')).toHaveCount(1)
+  await expect(head.locator('[data-feature="mouth"]')).toHaveAttribute('stroke-linecap', 'round')
+  await page.getByLabel('鱼头造型', { exact: true }).selectOption('shark')
+  await expect(head.locator('[data-feature="eye"] path')).toHaveCount(1)
+  await expect(head.locator('[data-feature="gill"]')).toHaveCount(3)
+  const preview = await readFile(new URL('../../docs/head-styles.svg', import.meta.url), 'utf8')
+  await page.setContent(preview)
+  await page.locator('body > svg').screenshot({ path: testInfo.outputPath('head-styles.png') })
 })
