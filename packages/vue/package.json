@@ -1,0 +1,29 @@
+{
+  "name": "@fishbone/vue",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A customizable SVG fishbone diagram component for Vue 3",
+  "license": "MIT",
+  "main": "./dist/fishbone.cjs",
+  "module": "./dist/fishbone.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/fishbone.js",
+      "require": "./dist/fishbone.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  }
+}

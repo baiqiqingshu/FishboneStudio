@@ -1,0 +1,35 @@
+{
+  "name": "fishbone-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @fishbone/demo -- --host 127.0.0.1",
+    "build": "npm run build -w @fishbone/vue && npm run build -w @fishbone/demo",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm run test && npm run build && node scripts/verify-package.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.0.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vue/language-core": "^3.3.12",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^27.0.0",
+    "prettier": "^3.9.9",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.7",
+    "vite-plugin-dts": "^5.1.2",
+    "vitest": "^5.0.3",
+    "vue": "^3.5.22",
+    "vue-tsc": "^3.1.0"
+  }
+}
