@@ -1,5 +1,5 @@
 {
-  "name": "fishbone-studio",
+  "name": "ui-studio",
   "version": "1.2.0",
   "private": true,
   "type": "module",
@@ -8,8 +8,8 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w @fishbone/demo -- --host 127.0.0.1",
-    "build": "npm run build -w @fishbone/vue && npm run build -w @fishbone/demo",
+    "dev": "npm run dev -w @ui-studio/web -- --host 127.0.0.1",
+    "build": "npm run build -w @ui-studio/fishbone && npm run build -w @ui-studio/web",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:e2e": "playwright test",

@@ -1,4 +1,4 @@
-import type { FlowchartData } from '@fishbone/vue'
+import type { FlowchartData } from '@ui-studio/fishbone'
 export const flowExamples: { name: string; description: string; data: FlowchartData }[] = [
   {
     name: '采购审批流程',

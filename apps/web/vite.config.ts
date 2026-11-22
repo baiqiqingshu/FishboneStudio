@@ -5,7 +5,9 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@fishbone/vue': fileURLToPath(new URL('../../packages/vue/src/index.ts', import.meta.url))
+      '@ui-studio/fishbone': fileURLToPath(
+        new URL('../../packages/fishbone/src/index.ts', import.meta.url)
+      )
     }
   },
   server: { port: 5173, strictPort: true }

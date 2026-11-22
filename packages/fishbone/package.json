@@ -1,5 +1,5 @@
 {
-  "name": "@fishbone/vue",
+  "name": "@ui-studio/fishbone",
   "version": "1.2.0",
   "type": "module",
   "description": "Vue 3 fishbone and automatic region flowchart diagrams with customizable styles and image export",

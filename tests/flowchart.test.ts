@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { flowExamples } from '../apps/demo/src/flowExamples'
-import { validateFlowchart } from '../packages/vue/src/flowchart/validate'
-import { layoutFlowchart } from '../packages/vue/src/flowchart/layout'
-import { renderFlowchartSvg } from '../packages/vue/src/flowchart/svg'
-import { segmentHitsBox } from '../packages/vue/src/flowchart/router'
+import { flowExamples } from '../apps/web/src/flowExamples'
+import { validateFlowchart } from '../packages/fishbone/src/flowchart/validate'
+import { layoutFlowchart } from '../packages/fishbone/src/flowchart/layout'
+import { renderFlowchartSvg } from '../packages/fishbone/src/flowchart/svg'
+import { segmentHitsBox } from '../packages/fishbone/src/flowchart/router'
 import {
   resolveFlowchartOptions,
   resolveFlowchartTheme,
   flowchartThemes
-} from '../packages/vue/src/flowchart/themes'
-import FlowchartDiagram from '../packages/vue/src/FlowchartDiagram.vue'
-import type { FlowchartData, FlowchartPreset } from '../packages/vue/src/flowchart/types'
+} from '../packages/fishbone/src/flowchart/themes'
+import FlowchartDiagram from '../packages/fishbone/src/FlowchartDiagram.vue'
+import type { FlowchartData, FlowchartPreset } from '../packages/fishbone/src/flowchart/types'
 
 describe('flowchart contract and layout', () => {
   it.each(flowExamples)(

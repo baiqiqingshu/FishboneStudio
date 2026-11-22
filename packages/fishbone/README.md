@@ -1,14 +1,14 @@
-# @fishbone/vue
+# @ui-studio/fishbone
 
 Vue 3 鱼骨图组件，支持嵌套树数据、五套内置主题、自定义样式和 PNG / JPEG / WebP / SVG 导出。
 
-v1.1 同时提供 `FlowchartDiagram`，支持活动 / 判断、区域分组、正交箭头连线、按连接优化的自动布局与多列分拆。输入格式为 `{ version: 1, nodes, regions?, edges }`。完整数据接口文档见仓库 `docs/flowchart-data.md`，包内 `schema/flowchart.schema.json` 提供 JSON Schema，可通过 `@fishbone/vue/schema` 访问。
+v1.1 同时提供 `FlowchartDiagram`，支持活动 / 判断、区域分组、正交箭头连线、按连接优化的自动布局与多列分拆。输入格式为 `{ version: 1, nodes, regions?, edges }`。完整数据接口文档见仓库 `docs/flowchart-data.md`，包内 `schema/flowchart.schema.json` 提供 JSON Schema，可通过 `@ui-studio/fishbone/schema` 访问。
 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { FlowchartDiagram } from '@fishbone/vue'
-import type { FlowchartData, FlowchartHandle } from '@fishbone/vue'
+import { FlowchartDiagram } from '@ui-studio/fishbone'
+import type { FlowchartData, FlowchartHandle } from '@ui-studio/fishbone'
 const chart = ref<FlowchartHandle | null>(null)
 const flowData: FlowchartData = {
   version: 1,
@@ -46,7 +46,7 @@ const flowData: FlowchartData = {
 ```vue
 <script setup>
 import { ref } from 'vue'
-import { FishboneDiagram } from '@fishbone/vue'
+import { FishboneDiagram } from '@ui-studio/fishbone'
 const diagram = ref(null)
 const data = {
   label: '项目延期',

@@ -1,6 +1,6 @@
-# Fishbone Studio
+# UI Studio
 
-Vue 3 鱼骨图、自动布局流程图组件库及中文演示工作台。支持结构化数据、主题定制和 PNG / JPEG / WebP / SVG 下载。
+前端组件库研发仓库（npm workspaces monorepo）。当前包含 Vue 3 鱼骨图、自动布局流程图组件库（`@ui-studio/fishbone`）及中文演示工作台（`apps/web`）。支持结构化数据、主题定制和 PNG / JPEG / WebP / SVG 下载。
 
 ![演示工作台](docs/preview.png)
 
@@ -9,7 +9,7 @@ Vue 3 鱼骨图、自动布局流程图组件库及中文演示工作台。支�
 需要 Node.js **22.12+**（建议 Node.js 24 LTS）及 npm。
 
 ```powershell
-cd D:\WorkProject\FishboneStudio
+cd D:\WorkProject\UIStudio
 npm install
 npm run dev
 ```
@@ -32,7 +32,7 @@ npm run test:e2e     # 实际浏览器：编辑、主题、存储、四种图片
 
 直接访问 http://127.0.0.1:5173/#flowchart ，或使用顶部图表选择器 / 左侧入口切换。
 
-流程图接口详见 [结构化数据 v1 与 Vue 接入](docs/flowchart-data.md)，机读格式为 [JSON Schema](packages/vue/schema/flowchart.schema.json)。`FlowchartDiagram`、`renderFlowchartSvg` 和 `layoutFlowchart` 均从 `@fishbone/vue` 导出。
+流程图接口详见 [结构化数据 v1 与 Vue 接入](docs/flowchart-data.md)，机读格式为 [JSON Schema](packages/fishbone/schema/flowchart.schema.json)。`FlowchartDiagram`、`renderFlowchartSvg` 和 `layoutFlowchart` 均从 `@ui-studio/fishbone` 导出。
 
 ![流程图工作台](docs/flowchart-preview.png)
 
@@ -51,10 +51,10 @@ npm run test:e2e     # 实际浏览器：编辑、主题、存储、四种图片
 包已按 npm 发布结构构建，目前为本地组件包，不需要发布到注册表即可集成：
 
 ```sh
-npm run build -w @fishbone/vue
-npm pack -w @fishbone/vue
+npm run build -w @ui-studio/fishbone
+npm pack -w @ui-studio/fishbone
 # 在你的 Vue 项目中安装生成的包（替换为实际文件路径）
-npm install D:/WorkProject/FishboneStudio/fishbone-vue-1.2.0.tgz
+npm install D:/WorkProject/UIStudio/ui-studio-fishbone-1.2.0.tgz
 ```
 
 生成 ESM / CommonJS 两种构建和 TypeScript 声明。Vue 是 peer dependency，不会被打进组件库；无需额外引入 CSS。
@@ -62,8 +62,8 @@ npm install D:/WorkProject/FishboneStudio/fishbone-vue-1.2.0.tgz
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { FishboneDiagram } from '@fishbone/vue'
-import type { FishboneNode, FishboneHandle } from '@fishbone/vue'
+import { FishboneDiagram } from '@ui-studio/fishbone'
+import type { FishboneNode, FishboneHandle } from '@ui-studio/fishbone'
 
 const diagram = ref<FishboneHandle | null>(null)
 const data: FishboneNode = {
@@ -93,7 +93,7 @@ async function save() {
 全局安装：
 
 ```ts
-import FishbonePlugin from '@fishbone/vue'
+import FishbonePlugin from '@ui-studio/fishbone'
 app.use(FishbonePlugin)
 ```
 
@@ -180,7 +180,7 @@ interface FishboneTheme {
 ## 独立渲染与服务端
 
 ```ts
-import { renderFishboneSvg, validateTree, exportSvgImage } from '@fishbone/vue'
+import { renderFishboneSvg, validateTree, exportSvgImage } from '@ui-studio/fishbone'
 
 validateTree(data)
 const svg = renderFishboneSvg(data, 'forest', { fontSize: 16 })
@@ -201,11 +201,11 @@ const blob = await exportSvgImage(svg, { format: 'webp', quality: 0.9 })
 ## 目录
 
 ```text
-packages/vue/       可独立分发的组件库
+packages/fishbone/  可独立分发的鱼骨图 / 流程图组件库
   src/layout.ts     树结构布局
   src/svg.ts        安全的独立 SVG 序列化
   src/export.ts     图片编码与下载
-apps/demo/          Vite + Vue 3 演示工作台
+apps/web/           Vite + Vue 3 演示工作台
 tests/              单元及浏览器集成测试
 ```
 

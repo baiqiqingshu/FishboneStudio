@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import FishboneDiagram from '../packages/vue/src/FishboneDiagram.vue'
-import { validateTree, TREE_LIMITS } from '../packages/vue/src/tree'
-import { layoutFishbone, wrapLabel, textWidth } from '../packages/vue/src/layout'
-import { renderFishboneSvg } from '../packages/vue/src/svg'
-import { fishboneThemes, resolveTheme } from '../packages/vue/src/themes'
-import { exportSvgImage } from '../packages/vue/src/export'
-import { fishboneAppearanceOptions, bonePoint } from '../packages/vue/src/appearance'
-import type { FishboneNode, FishbonePreset, FishboneAppearance } from '../packages/vue/src/types'
+import FishboneDiagram from '../packages/fishbone/src/FishboneDiagram.vue'
+import { validateTree, TREE_LIMITS } from '../packages/fishbone/src/tree'
+import { layoutFishbone, wrapLabel, textWidth } from '../packages/fishbone/src/layout'
+import { renderFishboneSvg } from '../packages/fishbone/src/svg'
+import { fishboneThemes, resolveTheme } from '../packages/fishbone/src/themes'
+import { exportSvgImage } from '../packages/fishbone/src/export'
+import { fishboneAppearanceOptions, bonePoint } from '../packages/fishbone/src/appearance'
+import type { FishboneNode, FishbonePreset, FishboneAppearance } from '../packages/fishbone/src/types'
 
 const data: FishboneNode = {
   label: '项目延期',

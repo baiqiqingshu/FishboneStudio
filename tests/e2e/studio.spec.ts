@@ -180,7 +180,7 @@ test('renders desktop and integration guide without browser errors', async ({ pa
   await page.screenshot({ path: testInfo.outputPath('desktop.png'), fullPage: true })
   await page.getByRole('button', { name: '开发文档' }).click()
   await expect(page.getByRole('dialog')).toContainText(
-    "import { FishboneDiagram } from '@fishbone/vue'"
+    "import { FishboneDiagram } from '@ui-studio/fishbone'"
   )
   await page.getByRole('button', { name: '关闭指南' }).click()
   expect(errors).toEqual([])

@@ -1,4 +1,4 @@
-import type { FishboneNode } from '@fishbone/vue'
+import type { FishboneNode } from '@ui-studio/fishbone'
 export const examples: { name: string; description: string; data: FishboneNode }[] = [
   {
     name: '产品质量分析',

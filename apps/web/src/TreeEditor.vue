@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ChevronDown, ChevronRight, Plus, X } from '@lucide/vue'
-import type { FishboneNode } from '@fishbone/vue'
+import type { FishboneNode } from '@ui-studio/fishbone'
 defineOptions({ name: 'TreeEditor' })
 defineProps<{ node: FishboneNode; path: number[]; depth?: number }>()
 const emit = defineEmits<{

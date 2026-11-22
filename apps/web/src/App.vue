@@ -14,7 +14,7 @@ import {
   type FishboneTheme,
   type FishboneHandle,
   type ImageFormat
-} from '@fishbone/vue'
+} from '@ui-studio/fishbone'
 import {
   ArrowDownToLine,
   ArrowUpRight,
@@ -67,7 +67,7 @@ function openLibraryTemplates() {
   else showTemplates.value = true
 }
 
-const STORAGE_KEY = 'fishbone-studio:v1'
+const STORAGE_KEY = 'ui-studio:v1'
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value))
 const selectedExample = ref(0)
 const data = ref<FishboneNode>(clone(examples[0]!.data))
@@ -492,8 +492,8 @@ function downloadData() {
 }
 const integrationCode = `<script setup lang="ts">
 import { ref } from 'vue'
-import { FishboneDiagram } from '@fishbone/vue'
-import type { FishboneHandle } from '@fishbone/vue'
+import { FishboneDiagram } from '@ui-studio/fishbone'
+import type { FishboneHandle } from '@ui-studio/fishbone'
 
 const diagram = ref<FishboneHandle | null>(null)
 const data = {
@@ -539,10 +539,10 @@ function openExport() {
     <aside class="sidebar">
       <a class="brand" href="#" @click.prevent="closePanels"
         ><span class="brand-mark"><Fish :size="25" :stroke-width="1.7" /></span
-        ><span>Fishbone<span class="brand-sub">STUDIO</span></span></a
+        ><span>UI<span class="brand-sub">STUDIO</span></span></a
       >
       <div class="workspace-switch">
-        <span class="workspace-avatar">F</span>
+        <span class="workspace-avatar">U</span>
         <div>我的工作空间<small>本地工作台</small></div>
         <ChevronDown :size="14" />
       </div>
@@ -996,7 +996,7 @@ function openExport() {
         </div>
         <footer class="page-footer">
           <span
-            ><Fish :size="15" />Fishbone Studio
+            ><Fish :size="15" />UI Studio
             <span class="divider-dot">/</span> 从原因，到答案。</span
           ><span
             >SVG 矢量渲染<span class="divider-dot">·</span>Vue 3 + TypeScript<span
@@ -1130,7 +1130,7 @@ function openExport() {
           </button>
         </div>
         <div class="docs-package">
-          <Code2 :size="16" /><code>@fishbone/vue</code><span>Vue 3.5+ · TypeScript</span>
+          <Code2 :size="16" /><code>@ui-studio/fishbone</code><span>Vue 3.5+ · TypeScript</span>
         </div>
         <pre><code>{{ integrationCode }}</code></pre>
         <div class="docs-bottom">

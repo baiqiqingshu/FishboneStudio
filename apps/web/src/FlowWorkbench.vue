@@ -14,7 +14,7 @@ import {
   type FlowchartLayoutOptions,
   type FlowchartNodeType,
   type ImageFormat
-} from '@fishbone/vue'
+} from '@ui-studio/fishbone'
 import {
   ArrowDownToLine,
   ArrowUpRight,
@@ -54,7 +54,7 @@ const notify = (message: string) => {
   }, 4000)
 }
 try {
-  const saved = localStorage.getItem('fishbone-studio:flowchart:v1')
+  const saved = localStorage.getItem('ui-studio:flowchart:v1')
   if (saved) {
     const state = JSON.parse(saved)
     validateFlowchart(state.data)
@@ -78,7 +78,7 @@ watch(
     saveTimer = setTimeout(() => {
       try {
         localStorage.setItem(
-          'fishbone-studio:flowchart:v1',
+          'ui-studio:flowchart:v1',
           JSON.stringify({
             data: data.value,
             preset: preset.value,
@@ -387,8 +387,8 @@ async function fullscreen() {
 }
 const code = `<script setup lang="ts">
 import { ref } from 'vue'
-import { FlowchartDiagram } from '@fishbone/vue'
-import type { FlowchartData, FlowchartHandle } from '@fishbone/vue'
+import { FlowchartDiagram } from '@ui-studio/fishbone'
+import type { FlowchartData, FlowchartHandle } from '@ui-studio/fishbone'
 const diagram = ref<FlowchartHandle | null>(null)
 const data: FlowchartData = {
   version: 1,

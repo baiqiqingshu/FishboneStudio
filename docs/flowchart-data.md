@@ -74,8 +74,8 @@
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { FlowchartDiagram } from '@fishbone/vue'
-import type { FlowchartData, FlowchartHandle } from '@fishbone/vue'
+import { FlowchartDiagram } from '@ui-studio/fishbone'
+import type { FlowchartData, FlowchartHandle } from '@ui-studio/fishbone'
 
 const chart = ref<FlowchartHandle | null>(null)
 const data: FlowchartData = {
@@ -160,7 +160,7 @@ import {
   layoutFlowchart,
   validateFlowchart,
   exportSvgImage
-} from '@fishbone/vue'
+} from '@ui-studio/fishbone'
 validateFlowchart(data)
 const svg = renderFlowchartSvg(data, 'ocean', theme, { maxNodesPerColumn: 4 })
 const geometry = layoutFlowchart(data) // 节点、区域、连线路径坐标
@@ -169,4 +169,4 @@ const blob = await exportSvgImage(svg, { format: 'webp' }) // 浏览器端
 
 布局和 SVG 渲染为不依赖 DOM 的纯函数，Vue SSR 可用。位图导出依赖 Canvas，最大单边 16,384 像素、总像素 32M，大图建议导出 SVG。结构校验失败不生成图片；Demo 错误 JSON 不覆盖当前数据。
 
-可机读格式：[flowchart.schema.json](../packages/vue/schema/flowchart.schema.json)。JSON Schema 描述字段类型，节点 ID 唯一、引用完整、起止唯一等跨字段规则由 `validateFlowchart()` 检查。
+可机读格式：[flowchart.schema.json](../packages/fishbone/schema/flowchart.schema.json)。JSON Schema 描述字段类型，节点 ID 唯一、引用完整、起止唯一等跨字段规则由 `validateFlowchart()` 检查。

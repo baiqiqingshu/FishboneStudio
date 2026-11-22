@@ -12,7 +12,7 @@
     "noEmit": true,
     "types": ["vite/client", "node"],
     "baseUrl": ".",
-    "paths": { "@fishbone/vue": ["packages/vue/src/index.ts"] }
+    "paths": { "@ui-studio/fishbone": ["packages/fishbone/src/index.ts"] }
   },
   "include": [
     "packages/**/*.ts",

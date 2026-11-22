@@ -1,5 +1,5 @@
 {
-  "name": "@fishbone/demo",
+  "name": "@ui-studio/web",
   "version": "1.2.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fishbone/vue": "*",
+    "@ui-studio/fishbone": "*",
     "@lucide/vue": "^1.54.0",
     "vue": "^3.5.22"
   }

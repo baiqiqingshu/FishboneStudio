@@ -1,5 +1,5 @@
 import { writeFile } from 'node:fs/promises'
-import { renderFishboneSvg, layoutFishbone } from '../packages/vue/dist/fishbone.js'
+import { renderFishboneSvg, layoutFishbone } from '../packages/fishbone/dist/fishbone.js'
 
 const choices = [
   {
