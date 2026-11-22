@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import {
   FishboneDiagram,
   fishboneThemes,
@@ -104,8 +104,92 @@ const jsonText = ref(JSON.stringify(data.value, null, 2))
 const jsonError = ref('')
 const diagram = ref<FishboneHandle | null>(null)
 const preview = ref<HTMLElement | null>(null)
+const diagramViewport = ref<HTMLElement | null>(null)
+const diagramCanvas = ref<HTMLElement | null>(null)
 const previewTab = ref<'diagram' | 'overview'>('diagram')
-const zoom = ref(100)
+const view = reactive({ x: 0, y: 0, scale: 1 })
+const zoom = computed(() => Math.round(view.scale * 100))
+const gridSize = computed(() => 24 * view.scale)
+const mod = (value: number, size: number) => ((value % size) + size) % size
+const gridStyle = computed(() => ({
+  backgroundPosition: `${mod(view.x, gridSize.value)}px ${mod(view.y, gridSize.value)}px`,
+  backgroundSize: `${gridSize.value}px ${gridSize.value}px`
+}))
+const panning = ref(false)
+let pan: { x: number; y: number; vx: number; vy: number } | null = null
+function startPan(event: PointerEvent) {
+  if (!diagramViewport.value || event.button !== 0 || pan) return
+  pan = { x: event.clientX, y: event.clientY, vx: view.x, vy: view.y }
+  panning.value = true
+  window.addEventListener('pointermove', onPan)
+  window.addEventListener('pointerup', endPan, { once: true })
+  window.addEventListener('pointercancel', endPan, { once: true })
+  event.preventDefault()
+}
+function onPan(event: PointerEvent) {
+  if (!pan) return
+  view.x = pan.vx + (event.clientX - pan.x)
+  view.y = pan.vy + (event.clientY - pan.y)
+}
+function endPan() {
+  window.removeEventListener('pointermove', onPan)
+  window.removeEventListener('pointerup', endPan)
+  window.removeEventListener('pointercancel', endPan)
+  pan = null
+  panning.value = false
+}
+function zoomAt(clientX: number, clientY: number, next: number) {
+  const target = Math.min(400, Math.max(50, next)) / 100
+  const el = diagramViewport.value
+  if (!el || target === view.scale) {
+    view.scale = target
+    return
+  }
+  const rect = el.getBoundingClientRect()
+  const cx = clientX - rect.left,
+    cy = clientY - rect.top,
+    k = target / view.scale
+  view.x = cx - (cx - view.x) * k
+  view.y = cy - (cy - view.y) * k
+  view.scale = target
+}
+function zoomCenter(next: number) {
+  const el = diagramViewport.value
+  if (!el) {
+    view.scale = Math.min(400, Math.max(50, next)) / 100
+    return
+  }
+  const rect = el.getBoundingClientRect()
+  zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, next)
+}
+function centerView(scalePercent = 100) {
+  const viewport = diagramViewport.value,
+    canvas = diagramCanvas.value
+  view.scale = Math.min(4, Math.max(0.5, scalePercent / 100))
+  if (!viewport || !canvas || !viewport.clientWidth) {
+    view.x = 0
+    view.y = 0
+    return
+  }
+  view.x = (viewport.clientWidth - canvas.offsetWidth * view.scale) / 2
+  view.y = (viewport.clientHeight - canvas.offsetHeight * view.scale) / 2
+}
+function onWheel(event: WheelEvent) {
+  event.preventDefault()
+  if (event.shiftKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+    view.x -= event.shiftKey && !event.deltaX ? event.deltaY : event.deltaX
+    if (!event.shiftKey) view.y -= event.deltaY
+    return
+  }
+  zoomAt(event.clientX, event.clientY, zoom.value * (event.deltaY > 0 ? 1 / 1.15 : 1.15))
+}
+watch(diagramViewport, (el, prev) => {
+  prev?.removeEventListener('wheel', onWheel)
+  if (el) {
+    el.addEventListener('wheel', onWheel, { passive: false })
+    nextTick(() => centerView())
+  }
+})
 const showExport = ref(false)
 const showTemplates = ref(false)
 const showDocs = ref(false)
@@ -267,6 +351,8 @@ watch(
 onBeforeUnmount(() => {
   clearTimeout(saveTimer)
   clearTimeout(toastTimer)
+  diagramViewport.value?.removeEventListener('wheel', onWheel)
+  endPan()
 })
 
 function commitTree(next: FishboneNode) {
@@ -347,7 +433,7 @@ function loadExample(index: number) {
   data.value = clone(examples[index]!.data)
   jsonText.value = JSON.stringify(data.value, null, 2)
   jsonError.value = ''
-  zoom.value = 100
+  nextTick(() => centerView())
   showTemplates.value = false
 }
 function changeTheme(key: FishbonePreset) {
@@ -627,8 +713,21 @@ function openExport() {
                 </div>
                 <span class="live-badge"><span />实时预览</span>
               </div>
-              <div v-show="previewTab === 'diagram'" class="diagram-viewport">
-                <div class="diagram-scroll">
+              <div
+                v-show="previewTab === 'diagram'"
+                ref="diagramViewport"
+                class="diagram-viewport"
+                :class="{ panning }"
+                :style="gridStyle"
+                @pointerdown="startPan"
+              >
+                <div
+                  ref="diagramCanvas"
+                  class="diagram-canvas"
+                  :style="{
+                    transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`
+                  }"
+                >
                   <div
                     class="diagram-surface"
                     :class="{
@@ -636,7 +735,6 @@ function openExport() {
                         currentTheme.background
                       )
                     }"
-                    :style="{ width: `${zoom}%`, minWidth: `${zoom}%` }"
                   >
                     <FishboneDiagram
                       ref="diagram"
@@ -647,7 +745,9 @@ function openExport() {
                     />
                   </div>
                 </div>
-                <div class="canvas-caption">CAUSE & EFFECT DIAGRAM</div>
+                <div class="canvas-caption">
+                  CAUSE & EFFECT DIAGRAM · 拖拽平移 · 滚轮缩放 · SHIFT + 滚轮横移
+                </div>
               </div>
               <div v-if="previewTab === 'overview'" class="overview">
                 <div class="overview-heading">
@@ -688,7 +788,7 @@ function openExport() {
                     class="icon-button"
                     aria-label="缩小"
                     :disabled="zoom <= 50"
-                    @click="zoom = Math.max(50, zoom - 25)"
+                    @click="zoomCenter(zoom - 25)"
                   >
                     <Minus :size="15" /></button
                   ><span>{{ zoom }}%</span
@@ -696,14 +796,14 @@ function openExport() {
                     class="icon-button"
                     aria-label="放大"
                     :disabled="zoom >= 400"
-                    @click="zoom = Math.min(400, zoom + 25)"
+                    @click="zoomCenter(zoom + 25)"
                   >
                     <Plus :size="15" /></button
                   ><i /><button
                     class="icon-button"
                     aria-label="适应画布"
                     title="适应画布"
-                    @click="zoom = 100"
+                    @click="centerView()"
                   >
                     <ZoomIn :size="16" /></button
                   ><button

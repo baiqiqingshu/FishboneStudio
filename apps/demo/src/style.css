@@ -755,23 +755,26 @@ h1 {
 .diagram-viewport {
   height: 388px;
   position: relative;
-  background-image: radial-gradient(#dfe6e8 0.65px, transparent 0.65px);
-  background-size: 18px 18px;
-  background-position: 5px 5px;
+  overflow: hidden;
+  background-color: #f2f6f7;
+  background-image: radial-gradient(circle, rgba(120, 143, 156, 0.32) 1.3px, transparent 1.4px);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
-.diagram-scroll {
-  height: 100%;
-  overflow: auto;
-  padding: 38px 24px 46px;
-  display: flex;
-  align-items: center;
-  scrollbar-width: thin;
-  scrollbar-color: #dbe4e7 transparent;
+.diagram-viewport.panning,
+.diagram-viewport.panning * {
+  cursor: grabbing;
+}
+.diagram-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
 }
 .diagram-surface {
-  flex-shrink: 0;
-  transition: width 0.2s;
-  min-height: 0;
+  width: max-content;
 }
 .transparent-surface {
   background: repeating-conic-gradient(#e8edf0 0% 25%, #fff 0% 50%) 0 / 16px 16px;
@@ -1125,9 +1128,6 @@ input[type='range'] {
   flex: 1;
   height: auto;
 }
-.preview-panel:fullscreen .diagram-scroll {
-  padding: 5vw;
-}
 .overview {
   height: 388px;
   overflow: auto;
@@ -1466,9 +1466,6 @@ input[type='range'] {
   .page-footer > span:last-child {
     font-size: 8px;
   }
-  .diagram-scroll {
-    padding: 30px 15px;
-  }
   .theme-option > strong {
     font-size: 9px;
   }
@@ -1594,9 +1591,6 @@ input[type='range'] {
   .diagram-viewport,
   .overview {
     height: 300px;
-  }
-  .diagram-scroll {
-    padding: 20px 10px;
   }
   .theme-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
